@@ -6,7 +6,7 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
-import { ToastContainer, toast } from 'react-toastify';
+import { toast } from 'react-hot-toast';
 export default function PaymentForm({ orderId, amount, email, onSuccess, onError, handlePlaceOrder, createOrderInDatabase, agreedToTerms }) {
   const stripe = useStripe();
   const elements = useElements();
@@ -91,7 +91,6 @@ export default function PaymentForm({ orderId, amount, email, onSuccess, onError
 
   return (
     <>
-      <ToastContainer />
       <form onSubmit={handleSubmit} className="space-y-4">
         <div className="border border-gray-300 rounded-lg p-4">
           <CardElement
