@@ -274,7 +274,7 @@ const CategoryWiseProducts = ({ params }) => {
                             {filteredProducts.map((product, index) => {
                                 const avgRating = getAvgRating(product._id);
                                 return (
-                                    <Link href={`/product/${product._id}`} key={product._id}>
+                                    <Link href={`/product/${product.productid}`} key={product._id}>
                                         <div
                                             className="group bg-white rounded-xl sm:rounded-2xl shadow-sm sm:shadow-md overflow-hidden transition-all duration-300 hover:shadow-lg sm:hover:shadow-xl hover:-translate-y-1 h-full"
                                             style={{ animation: `fadeInUp 0.5s ease-out ${index * 0.05}s both` }}
