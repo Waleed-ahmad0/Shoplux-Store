@@ -132,7 +132,7 @@ export default function Home() {
 
                   {/* Hero Image - On top for mobile */}
                   <div className={`w-full lg:w-1/2 lg:order-2 transition-all duration-700 delay-100 ${index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
-                    <div className="relative mx-auto max-w-[180px] sm:max-w-[280px] lg:max-w-[400px]">
+                    <div className="relative mx-auto max-w-[280px] sm:max-w-[320px] lg:max-w-[400px]">
                       {/* Decorative elements - smaller on mobile */}
                       <div className="absolute -inset-3 sm:-inset-5 lg:-inset-6 bg-linear-to-br from-blue-400/15 via-purple-400/15 to-pink-400/15 rounded-2xl sm:rounded-3xl transform rotate-3 blur-sm"></div>
                       <div className="absolute -inset-1.5 sm:-inset-2 lg:-inset-3 bg-linear-to-tl from-indigo-400/10 to-cyan-400/10 rounded-xl sm:rounded-2xl transform -rotate-2"></div>
@@ -297,7 +297,7 @@ export default function Home() {
                   Featured Products
                 </h2>
                 <p className="text-xs sm:text-sm lg:text-lg pl-2.5 font-medium text-gray-600">
-                  our latest items 
+                  our latest items
                 </p>
               </div>
               {/* <Link href="/products" className="hidden sm:flex items-center gap-1 text-blue-600 hover:text-blue-700 font-medium text-sm lg:text-base shrink-0">
