@@ -363,6 +363,9 @@ export default function CompletedOrdersPage() {
                                             <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold ${getStatusBadge(order.status)} uppercase`}>
                                                 {order.status}
                                             </span>
+                                            <span className={`px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full text-[10px] sm:text-xs font-semibold bg-slate-100 border border-slate-400 uppercase`}>
+                                                {order.paymentMethod}
+                                            </span>
                                         </div>
                                         <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-4 text-xs sm:text-sm">
                                             <div className="flex items-center gap-1.5 text-gray-600">

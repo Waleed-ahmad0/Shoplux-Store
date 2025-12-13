@@ -513,16 +513,6 @@ export default function ProductPage({ params }) {
                   <div className="text-gray-500 italic text-sm sm:text-base">Select available options to see price</div>
                 )}
 
-                {/* Stock status */}
-                {isCombinationValid && (
-                  <span className={`inline-flex items-center px-2.5 sm:px-3 lg:px-4 py-1 sm:py-1.5 lg:py-2 rounded-full text-xs sm:text-sm font-medium ${stockCount > 0
-                    ? 'bg-green-100 text-green-800'
-                    : 'bg-red-100 text-red-800'
-                    }`}>
-                    <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mr-1.5 sm:mr-2 ${stockCount > 0 ? 'bg-green-400' : 'bg-red-400'}`}></div>
-                    {stockCount > 0 ? `${stockCount} in Stock` : 'Out of Stock'}
-                  </span>
-                )}
               </div>
 
               {/* Variant Selectors */}

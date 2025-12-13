@@ -71,7 +71,6 @@ const orderSchema = new Schema({
     address: { type: String, required: true, trim: true },
     apartment: { type: String, trim: true },
     city: { type: String, required: true, trim: true },
-    state: { type: String, required: true, trim: true },
     zipCode: { type: String, required: true, trim: true },
   },
 

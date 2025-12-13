@@ -9,6 +9,7 @@ import PaymentForm from '@/components/paymentForm';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
+import Link from 'next/link';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
@@ -23,7 +24,6 @@ const CheckoutPage = () => {
     const [pendingOrderId, setPendingOrderId] = useState(null);
     const [shippingMethod, setShippingMethod] = useState('standard');
     const { data, status } = useSession()
-    const [agreedToTerms, setAgreedToTerms] = useState(false);
     const [newsletterSubscribe, setNewsletterSubscribe] = useState(false);
     const [orderItems, setorderitems] = useState([])
     const [errorhandle, seterrorhandle] = useState(false)
@@ -37,7 +37,6 @@ const CheckoutPage = () => {
         address: '',
         apartment: '',
         city: '',
-        state: '',
         zipCode: '',
     });
 
@@ -126,7 +125,6 @@ const CheckoutPage = () => {
             }
 
             seterrorhandle(false)
-            setAgreedToTerms(false)
 
             if (paymentMethod === 'cod') {
                 const orderId = generateOrderId();
@@ -291,21 +289,7 @@ const CheckoutPage = () => {
                                         required
                                     />
                                 </div>
-                                <div>
-                                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-1.5">State *</label>
-                                    <select
-                                        value={shippingForm.state}
-                                        onChange={(e) => handleShippingChange('state', e.target.value)}
-                                        className="w-full px-2 sm:px-3 py-2 sm:py-2.5 lg:py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-gray-900 focus:border-transparent outline-none text-sm sm:text-base bg-white"
-                                        required
-                                    >
-                                        <option value="">Select</option>
-                                        <option value="CA">CA</option>
-                                        <option value="NY">NY</option>
-                                        <option value="TX">TX</option>
-                                        <option value="FL">FL</option>
-                                    </select>
-                                </div>
+                                
                                 <div>
                                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-1.5">ZIP *</label>
                                     <input
@@ -482,31 +466,7 @@ const CheckoutPage = () => {
                             </div>
 
                             {/* Terms Checkbox */}
-                            <div className="space-y-3 mb-4 sm:mb-5">
-                                <label className="flex items-start gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={agreedToTerms}
-                                        onChange={(e) => setAgreedToTerms(e.target.checked)}
-                                        className="mt-0.5 w-4 h-4"
-                                        required
-                                    />
-                                    <span className="text-xs sm:text-sm text-gray-700">
-                                        I agree to the <a href="#" className="text-blue-600 hover:underline">Terms</a> and <a href="#" className="text-blue-600 hover:underline">Privacy Policy</a> *
-                                    </span>
-                                </label>
-                                <label className="flex items-start gap-2 cursor-pointer">
-                                    <input
-                                        type="checkbox"
-                                        checked={newsletterSubscribe}
-                                        onChange={(e) => setNewsletterSubscribe(e.target.checked)}
-                                        className="mt-0.5 w-4 h-4"
-                                    />
-                                    <span className="text-xs sm:text-sm text-gray-700">
-                                        Subscribe to newsletter
-                                    </span>
-                                </label>
-                            </div>
+                            
 
                             {/* Place Order Button */}
                             {paymentMethod === 'card' ? (
@@ -518,7 +478,6 @@ const CheckoutPage = () => {
                                         onSuccess={handleStripePaymentSuccess}
                                         onError={handleStripePaymentError}
                                         isProcessing={isProcessingPayment}
-                                        agreedToTerms={agreedToTerms}
                                         handlePlaceOrder={handlePlaceOrder}
                                         createOrderInDatabase={createOrderInDatabase}
                                     />
@@ -526,7 +485,7 @@ const CheckoutPage = () => {
                             ) : (
                                 <button
                                     onClick={handlePlaceOrder}
-                                    disabled={!agreedToTerms || isProcessingPayment}
+                                    disabled={isProcessingPayment}
                                     className="w-full bg-gray-900 text-white py-3 sm:py-3.5 lg:py-4 rounded-lg font-semibold hover:bg-gray-800 active:bg-gray-950 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors text-sm sm:text-base"
                                 >
                                     {isProcessingPayment ? 'Processing...' : 'Place Order (COD)'}

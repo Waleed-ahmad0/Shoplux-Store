@@ -6,8 +6,8 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
-import { toast } from 'react-hot-toast';
-export default function PaymentForm({ orderId, amount, email, onSuccess, onError, handlePlaceOrder, createOrderInDatabase, agreedToTerms }) {
+import { toast } from 'react-hot-toast'
+export default function PaymentForm({ orderId, amount, email, onSuccess, onError, handlePlaceOrder, createOrderInDatabase,  }) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -128,7 +128,7 @@ export default function PaymentForm({ orderId, amount, email, onSuccess, onError
         <button
           type="submit"
 
-          disabled={!stripe || loading || !agreedToTerms}
+          disabled={!stripe || loading}
           className="w-full bg-gray-900 text-white py-4 rounded-lg font-semibold hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 mb-4"
         >
           {loading ? 'Processing...' : `Pay $${amount.toFixed(2)}`}
