@@ -1,5 +1,6 @@
 "use client"
 import { useSession } from 'next-auth/react';
+import toast from 'react-hot-toast';
 import Image from 'next/image';
 import LoadingScreen from '@/components/LoadingScreen';
 import Navbar from '@/components/Navbar';
@@ -100,7 +101,7 @@ export default function UserOrdersDashboard() {
   const [loading, setLoading] = useState(true);
   const [expandedOrder, setExpandedOrder] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
-  const [cancelModal, setCancelModal] = useState({ show: false, orderId: null });
+  const [cancelModal, setCancelModal] = useState({ show: false, orderId: null, orderedItems: [] });
 
   useEffect(() => {
     if (status === "authenticated") {
@@ -128,12 +129,13 @@ export default function UserOrdersDashboard() {
     return order.status === statusFilter;
   });
 
-  const handleCancelOrder = async (orderId) => {
+  const handleCancelOrder = async (orderId, orderedItems) => {
+    const loadingToast = toast.loading('Cancelling order...');
     try {
       const response = await fetch(`/api/order/${data.user.id}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ orderId: orderId, status: 'cancelled' })
+        body: JSON.stringify({ orderId, status: 'cancelled', orderedItems })
       });
 
       const datas = await response.json();
@@ -148,16 +150,17 @@ export default function UserOrdersDashboard() {
               : order
           )
         );
+        toast.success('Order cancelled successfully', { id: loadingToast });
       }
     } catch (error) {
       console.error('Error cancelling order:', error);
-      alert('Failed to cancel order: ' + error.message);
+      toast.error('Failed to cancel order: ');
     }
     setCancelModal({ show: false, orderId: null });
   };
 
-  const openCancelModal = (orderId) => {
-    setCancelModal({ show: true, orderId });
+  const openCancelModal = (orderId, orderedItems) => {
+    setCancelModal({ show: true, orderId, orderedItems });
   };
 
   if (loading) {
@@ -283,7 +286,7 @@ export default function UserOrdersDashboard() {
                         <div className="flex items-center gap-2">
                           {canCancelOrder(order.status) && (
                             <button
-                              onClick={() => openCancelModal(order.orderId)}
+                              onClick={() => openCancelModal(order.orderId, order.orderedItems)}
                               className="px-4 py-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                             >
                               Cancel
@@ -483,7 +486,7 @@ export default function UserOrdersDashboard() {
                 Keep Order
               </button>
               <button
-                onClick={() => handleCancelOrder(cancelModal.orderId)}
+                onClick={() => handleCancelOrder(cancelModal.orderId, cancelModal.orderedItems)}
                 className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors font-medium text-sm shadow-sm"
               >
                 Yes, Cancel

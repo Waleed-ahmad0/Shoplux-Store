@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/order";
+import _ from "lodash"
+import Product from "@/models/product";
 
 // GET all orders for a user
 export async function GET(req, { params }) {
@@ -37,6 +39,23 @@ export async function POST(req, { params }) {
         const datafordb = { userId, ...body };
         const result = await Order.create(datafordb);
 
+
+
+        datafordb.orderedItems.map(async item =>{
+            const check = await Product.findOne({ productid:item.productId})
+            const matchedproduct = check.variants.map(async variant => {
+                const variantsMap= variant.attributes
+                const variantsObject = Object.fromEntries(variantsMap);
+                const areEqual = _.isEqual(item.selectedVariant, variantsObject);
+                if (areEqual) {
+                    variant.stockCount -= item.quantity;
+                    await check.save();
+                }
+            })
+        })
+        
+
+
         return NextResponse.json(result, { status: 201 });
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 });
@@ -65,6 +84,20 @@ export async function PATCH(request, { params }) {
             { $set: updateData },
             { returnDocument: 'after', new: true }
         );
+        if(data.status === "cancelled"){
+            data.orderedItems.map(async item =>{
+                const check = await Product.findOne({ productid:item.productId})
+                const matchedproduct = check.variants.map(async variant => {
+                    const variantsMap= variant.attributes
+                    const variantsObject = Object.fromEntries(variantsMap);
+                    const areEqual = _.isEqual(item.selectedVariant, variantsObject);
+                    if (areEqual) {
+                        variant.stockCount += item.quantity;
+                        await check.save();
+                    }
+                })
+            })
+        }
 
         return NextResponse.json({ success: true, result });
     } catch (error) {
