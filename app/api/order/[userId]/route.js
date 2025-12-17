@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
 import Order from "@/models/order";
 import _ from "lodash"
+import Cart from "@/models/cart"
 import Product from "@/models/product";
 
 // GET all orders for a user
@@ -36,15 +37,16 @@ export async function POST(req, { params }) {
         }
 
         await dbConnect();
+        await Cart.deleteMany({ userId })
         const datafordb = { userId, ...body };
         const result = await Order.create(datafordb);
 
 
 
-        datafordb.orderedItems.map(async item =>{
-            const check = await Product.findOne({ productid:item.productId})
+        datafordb.orderedItems.map(async item => {
+            const check = await Product.findOne({ productid: item.productId })
             const matchedproduct = check.variants.map(async variant => {
-                const variantsMap= variant.attributes
+                const variantsMap = variant.attributes
                 const variantsObject = Object.fromEntries(variantsMap);
                 const areEqual = _.isEqual(item.selectedVariant, variantsObject);
                 if (areEqual) {
@@ -53,7 +55,7 @@ export async function POST(req, { params }) {
                 }
             })
         })
-        
+
 
 
         return NextResponse.json(result, { status: 201 });
@@ -84,11 +86,11 @@ export async function PATCH(request, { params }) {
             { $set: updateData },
             { returnDocument: 'after', new: true }
         );
-        if(data.status === "cancelled"){
-            data.orderedItems.map(async item =>{
-                const check = await Product.findOne({ productid:item.productId})
+        if (data.status === "cancelled") {
+            data.orderedItems.map(async item => {
+                const check = await Product.findOne({ productid: item.productId })
                 const matchedproduct = check.variants.map(async variant => {
-                    const variantsMap= variant.attributes
+                    const variantsMap = variant.attributes
                     const variantsObject = Object.fromEntries(variantsMap);
                     const areEqual = _.isEqual(item.selectedVariant, variantsObject);
                     if (areEqual) {

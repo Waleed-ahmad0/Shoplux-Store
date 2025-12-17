@@ -94,18 +94,6 @@ const CheckoutPage = () => {
             if (!sendcheckout.ok) {
                 return { ok: false, error: response?.error || 'Failed to create order' };
             }
-
-            const check = await fetch(`/api/cart/${data.user.id}`, {
-                method: 'DELETE',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ userId: data.user.id }),
-            });
-
-            if (!check.ok) {
-                const responses = await check.json();
-                return { ok: false, error: responses?.error || 'Order created but failed to clear cart' };
-            }
-
             return { ok: true, data: response };
         } catch (err) {
             console.error('createOrderInDatabase error', err);

@@ -47,15 +47,14 @@ export async function POST(req, { params }) {
 export async function DELETE(req, { params }) {
     try {
         await dbConnect();
-        const userId =(await params).userId
-        if (!userId) {
-            return NextResponse.json({ error: "userId is missing" }, { status: 400 });
+        const data = await req.json()
+        if (!data) {
+            return NextResponse.json({ error: "data is missing" }, { status: 400 });
 
         }
 
-        const result = await Cart.deleteMany({ userId })
-
-        return NextResponse.json(result, { status: 200 });
+        const result = await Cart.findOneAndDelete({ selectedVariant :data.selectedVariant})
+        return NextResponse.json( { status: 200 });
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
