@@ -78,7 +78,17 @@ e-commerce/
    MONGODB_URI=your_mongodb_connection_string
    NEXTAUTH_SECRET=your_nextauth_secret
    NEXTAUTH_URL=http://localhost:3000
-   # Add other necessary keys (Stripe, Cloudinary, etc.)
+   GITHUB_CLIENT_ID=your_github_client_id
+   GITHUB_CLIENT_SECRET=your_github_client_secret
+   DISCORD_CLIENT_ID=your_discord_client_id
+   DISCORD_CLIENT_SECRET=your_discord_client_secret
+   GOOGLE_CLIENT_ID=your_google_client_id
+   GOOGLE_CLIENT_SECRET=your_google_client_secret
+   STRIPE_SECRET_KEY=your_stripe_secret
+   NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=your_public_stripe_key
+   CLOUDINARY_CLOUD_NAME=your_cloud_name
+   CLOUDINARY_API_KEY=your_cloudinary_api
+   CLOUDINARY_API_SECRET=your_cloudinary_secret
    ```
 
 4. **Run the development server:**
