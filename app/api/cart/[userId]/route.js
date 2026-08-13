@@ -1,10 +1,15 @@
+import { authOptions } from "@/lib/auth";
 import dbConnect from "@/lib/mongodb";
 import Cart from "@/models/cart";
+import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
-// GET all products
 export async function GET(request, { params }) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
         const { userId } = await params
         await dbConnect();
         const products = await Cart.find({ userId });
@@ -14,13 +19,15 @@ export async function GET(request, { params }) {
     }
 }
 
-// POST create product
 export async function POST(req, { params }) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
         const { userId } = await params
         await dbConnect();
         const body = await req.json();
-        // ✅ You decide validation rules here
         if (!body) {
             return NextResponse.json({ error: "body is undefined" }, { status: 400 });
         }
@@ -46,6 +53,10 @@ export async function POST(req, { params }) {
 }
 export async function DELETE(req, { params }) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
         await dbConnect();
         const data = await req.json()
         if (!data) {
@@ -53,8 +64,8 @@ export async function DELETE(req, { params }) {
 
         }
 
-        const result = await Cart.findOneAndDelete({ selectedVariant :data.selectedVariant})
-        return NextResponse.json( { status: 200 });
+        const result = await Cart.findOneAndDelete({ selectedVariant: data.selectedVariant })
+        return NextResponse.json({ status: 200 });
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
@@ -62,6 +73,10 @@ export async function DELETE(req, { params }) {
 export async function PATCH(request, { params }) {
 
     try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
         const { userId } = await params
         if (!userId) {
             return NextResponse.json({ error: "user id is missing", data }, { status: 400 });

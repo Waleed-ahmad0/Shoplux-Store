@@ -1,9 +1,15 @@
+import { authOptions } from '@/lib/auth';
+import { getServerSession } from 'next-auth';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY);
 
 export async function POST(request) {
   try {
+            const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
     const { amount, email, orderId } = await request.json();
 
     if (!amount || amount <= 0) {

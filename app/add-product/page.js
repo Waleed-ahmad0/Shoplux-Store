@@ -1,18 +1,21 @@
 "use client"
 import React, { useState, useRef } from 'react';
-import { useRouter } from 'next/navigation';
+import { notFound, useRouter } from 'next/navigation';
 import toast from 'react-hot-toast';
 import Link from 'next/link';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-
+import { useSession } from 'next-auth/react';
 const AddProductPage = () => {
     const router = useRouter();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRefs = useRef({});
-
+const {data:session}= useSession()
+if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
+    notFound()
+}
     // Basic product info
     const [productData, setProductData] = useState({
         name: '',

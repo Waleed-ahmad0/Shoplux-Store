@@ -4,10 +4,15 @@ import Order from "@/models/order";
 import _ from "lodash"
 import Cart from "@/models/cart"
 import Product from "@/models/product";
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 
-// GET all orders for a user
 export async function GET(req, { params }) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
         const { userId } = await params;
         await dbConnect();
         const orders = await Order.find({ userId });
@@ -17,18 +22,19 @@ export async function GET(req, { params }) {
     }
 }
 
-// POST create order
 export async function POST(req, { params }) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
         const { userId } = await params;
         const body = await req.json();
 
-        // Validation
         if (!body) {
             return NextResponse.json({ error: "body is required" }, { status: 400 });
         }
 
-        // Validate required fields
         if (!body.orderId) {
             return NextResponse.json({ error: "orderId is required" }, { status: 400 });
         }
@@ -66,6 +72,10 @@ export async function POST(req, { params }) {
 
 export async function PATCH(request, { params }) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
         const data = await request.json();
 
         if (!data.status) {
@@ -108,6 +118,10 @@ export async function PATCH(request, { params }) {
 }
 export async function DELETE(req, { params }) {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
         await dbConnect();
         const UserId = await req.json();
 

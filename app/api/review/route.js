@@ -5,6 +5,10 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 export async function GET() {
     try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
         await dbConnect();
         const reviews = await Review.find({});
         return NextResponse.json(reviews, { status: 200 });
@@ -15,7 +19,9 @@ export async function GET() {
 export async function POST(req) {
     try {
         const session = await getServerSession(authOptions);
-
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
         await dbConnect();
         const body = await req.json();
         const reviewdata = { ...body, userId: session.user.id };

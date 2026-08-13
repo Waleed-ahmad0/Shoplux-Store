@@ -1,7 +1,8 @@
 import dbConnect from "@/lib/mongodb";
 import { NextResponse } from "next/server";
 import Products from "@/models/product";
-// GET all products
+import { getServerSession } from "next-auth";
+import { authOptions } from "@/lib/auth";
 export async function GET() {
     try {
         await dbConnect();
@@ -12,12 +13,16 @@ export async function GET() {
     }
 }
 
-// POST create product
 export async function POST(req) {
     try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || session?.user?.email !== process.env.ADMIN_EMAIL) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
+
         const body = await req.json();
         await dbConnect();
-        // ✅ You decide validation rules here
         if (!body) {
             return NextResponse.json({ error: "name and price are required" }, { status: 400 });
         }
@@ -31,9 +36,13 @@ export async function POST(req) {
 }
 export async function DELETE(req) {
     try {
+        const session = await getServerSession(authOptions);
+
+        if (!session || session?.user?.email !== process.env.ADMIN_EMAIL) {
+            return NextResponse.json({ message: 'unauthorized', status: 401 })
+        }
         const body = await req.json();
         await dbConnect();
-        // ✅ You decide validation rules here
         if (!body) {
             return NextResponse.json({ error: "productid is required" }, { status: 400 });
         }
