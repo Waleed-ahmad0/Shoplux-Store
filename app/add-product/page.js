@@ -12,11 +12,8 @@ const AddProductPage = () => {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRefs = useRef({});
-const {data:session}= useSession()
-if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
-    notFound()
-}
-    // Basic product info
+    const { data: session, status } = useSession()
+
     const [productData, setProductData] = useState({
         name: '',
         description: '',
@@ -25,23 +22,33 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
         brand: '',
     });
 
-    // Variants with image files and previews
     const [variants, setVariants] = useState([{
         attributes: {},
         price: '',
         stockCount: '',
         salePrice: '',
-        images: [], // Will store { file: File, preview: string, uploaded: string }
+        images: [],
         sku: '',
     }]);
 
-    // Attribute inputs for each variant
     const [attributeInputs, setAttributeInputs] = useState([{ key: '', value: '' }]);
 
     const categoryOptions = {
         electronics: ['laptops', 'smartphones', 'headphones', 'cameras', 'tablets', 'accessories'],
         fashion: ['men', 'women', 'kids', 'accessories', 'footwear', 'bags']
     };
+
+    if (status === 'loading') {
+        return (
+            <div className="min-h-screen flex items-center justify-center">
+                <div className="animate-spin w-8 h-8 border-4 border-blue-600 border-t-transparent rounded-full"></div>
+            </div>
+        );
+    }
+
+    if (!session || session?.user?.role !== 'admin') {
+        notFound();
+    }
 
     const handleProductChange = (field, value) => {
         setProductData(prev => ({ ...prev, [field]: value }));
@@ -89,7 +96,6 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
                 continue;
             }
 
-            // Create preview URL
             const preview = URL.createObjectURL(file);
             newImages.push({ file, preview, uploaded: null });
         }
@@ -107,7 +113,6 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
     const removeImage = (variantIndex, imageIndex) => {
         setVariants(prev => {
             const updated = [...prev];
-            // Revoke preview URL to prevent memory leaks
             if (updated[variantIndex].images[imageIndex]?.preview) {
                 URL.revokeObjectURL(updated[variantIndex].images[imageIndex].preview);
             }
@@ -132,7 +137,6 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
 
     const removeVariant = (index) => {
         if (variants.length > 1) {
-            // Cleanup preview URLs
             variants[index].images.forEach(img => {
                 if (img.preview) URL.revokeObjectURL(img.preview);
             });
@@ -146,12 +150,11 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
         return `PRD-${timestamp}-${random}`.toUpperCase();
     };
 
-    // Upload images to server
     const uploadImages = async (images, name) => {
         if (images.length === 0) return [];
 
         const formData = new FormData();
-        formData.append('productName', name); // Send product name for filename
+        formData.append('productName', name);
         images.forEach(img => {
             if (img.file) {
                 formData.append('files', img.file);
@@ -175,32 +178,27 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
         setIsSubmitting(true);
 
         try {
-            // Validate required fields
             if (!productData.name || !productData.category || !productData.productType) {
                 toast.error('Please fill all required fields', { position: 'top-center' });
                 setIsSubmitting(false);
                 return;
             }
 
-            // Upload all images first
             setIsUploading(true);
             const processedVariants = [];
 
             for (let i = 0; i < variants.length; i++) {
                 const variant = variants[i];
 
-                // Validate variant
                 if (!variant.price || !variant.stockCount || !variant.sku) {
                     throw new Error(`Variant ${i + 1} is missing required fields`);
                 }
 
-                // Upload images for this variant
                 let uploadedImageUrls = [];
                 if (variant.images.length > 0) {
                     uploadedImageUrls = await uploadImages(variant.images, productData.name);
                 }
 
-                // Build attributes
                 const attributes = {};
                 if (i === 0) {
                     attributeInputs.forEach(attr => {
@@ -281,7 +279,6 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
                 </div>
 
                 <form onSubmit={handleSubmit} className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
-                    {/* Basic Information */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5 lg:p-6 mb-4 sm:mb-6">
                         <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-4 sm:mb-5 flex items-center gap-2">
                             <span className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm">1</span>
@@ -367,7 +364,6 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
                         </div>
                     </div>
 
-                    {/* Variants */}
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5 lg:p-6 mb-4 sm:mb-6">
                         <div className="flex items-center justify-between mb-4 sm:mb-5">
                             <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 flex items-center gap-2">
@@ -401,7 +397,6 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
                                     )}
                                 </div>
 
-                                {/* Attributes - Only for first variant */}
                                 {variantIndex === 0 && (
                                     <div className="mb-4">
                                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
@@ -444,7 +439,6 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
                                     </div>
                                 )}
 
-                                {/* Price, Stock, SKU */}
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
                                     <div>
                                         <label className="block text-xs font-medium text-gray-700 mb-1">Price *</label>
@@ -493,11 +487,9 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
                                     </div>
                                 </div>
 
-                                {/* Image Upload */}
                                 <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-2">Product Images</label>
 
-                                    {/* Image Previews */}
                                     {variant.images.length > 0 && (
                                         <div className="flex flex-wrap gap-2 sm:gap-3 mb-3">
                                             {variant.images.map((img, imgIndex) => (
@@ -526,7 +518,6 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
                                         </div>
                                     )}
 
-                                    {/* File Input */}
                                     <div className="flex items-center gap-2">
                                         <input
                                             ref={el => fileInputRefs.current[variantIndex] = el}
@@ -555,7 +546,6 @@ if (!session || session?.user?.email!== process.env.ADMIN_EMAIL) {
                         ))}
                     </div>
 
-                    {/* Submit Button */}
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                         <button
                             type="submit"

@@ -144,7 +144,8 @@ export default function ProductPage({ params }) {
         setfilteredreviews(filteredReviews);
         setavgrating(filteredReviews.reduce((sum, r) => sum + r.rating, 0) / filteredReviews.length);
         const allProducts = await response.json();
-        const productData = allProducts.find(item => item.productid === id);
+        console.log(allProducts)
+        const productData = allProducts.find(item => item._id === id);
 
         if (!productData) {
           setError('Product not found');
@@ -345,7 +346,6 @@ export default function ProductPage({ params }) {
     }
   }
 
-  // DELETE PRODUCT
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this product? This action cannot be undone.')) {
       return;
@@ -358,7 +358,7 @@ export default function ProductPage({ params }) {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ productid: product.productid }),
+        body: JSON.stringify({ productid: product._id }),
       });
 
       if (res.ok) {

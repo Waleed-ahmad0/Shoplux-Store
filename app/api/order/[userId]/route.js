@@ -11,7 +11,7 @@ export async function GET(req, { params }) {
     try {
         const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized', status: 401 })
+            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
         }
         const { userId } = await params;
         await dbConnect();
@@ -26,7 +26,7 @@ export async function POST(req, { params }) {
     try {
         const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized', status: 401 })
+            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
         }
         const { userId } = await params;
         const body = await req.json();
@@ -72,9 +72,9 @@ export async function POST(req, { params }) {
 
 export async function PATCH(request, { params }) {
     try {
-        const session = await getServerSession(authOptions);
+         const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized', status: 401 })
+            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
         }
         const data = await request.json();
 
@@ -118,9 +118,9 @@ export async function PATCH(request, { params }) {
 }
 export async function DELETE(req, { params }) {
     try {
-        const session = await getServerSession(authOptions);
+         const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized', status: 401 })
+            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
         }
         await dbConnect();
         const UserId = await req.json();

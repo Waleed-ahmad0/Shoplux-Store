@@ -1,12 +1,7 @@
 import { Schema, models, model } from "mongoose"
 
 const productSchema = new Schema({
-  productid: {
-    type: String,
-    required: true,
-    unique: true,
-    index: true // Primary lookup index
-  },
+
   name: {
     type: String,
     required: true,

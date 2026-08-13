@@ -8,7 +8,7 @@ export async function POST(request) {
   try {
             const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized', status: 401 })
+            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
         }
     const { amount, email, orderId } = await request.json();
 

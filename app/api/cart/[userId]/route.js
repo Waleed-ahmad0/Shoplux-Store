@@ -6,9 +6,9 @@ import { NextResponse } from "next/server";
 
 export async function GET(request, { params }) {
     try {
-        const session = await getServerSession(authOptions);
+         const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized', status: 401 })
+            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
         }
         const { userId } = await params
         await dbConnect();
@@ -21,9 +21,9 @@ export async function GET(request, { params }) {
 
 export async function POST(req, { params }) {
     try {
-        const session = await getServerSession(authOptions);
+         const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized', status: 401 })
+            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
         }
         const { userId } = await params
         await dbConnect();
@@ -73,9 +73,9 @@ export async function DELETE(req, { params }) {
 export async function PATCH(request, { params }) {
 
     try {
-        const session = await getServerSession(authOptions);
+         const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized', status: 401 })
+            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
         }
         const { userId } = await params
         if (!userId) {

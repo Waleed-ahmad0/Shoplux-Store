@@ -14,7 +14,7 @@ export async function POST(req) {
     try {
                 const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized', status: 401 })
+            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
         }
         const formData = await req.formData();
         const files = formData.getAll("files");

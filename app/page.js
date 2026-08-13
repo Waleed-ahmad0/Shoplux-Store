@@ -109,9 +109,7 @@ export default function Home() {
     <div className="overflow-x-hidden">
       <Navbar />
       <div className="min-h-screen bg-gray-50">
-        {/* Hero Section - Enhanced Mobile Responsive */}
         <section className="relative overflow-hidden bg-linear-to-br from-slate-50 via-blue-50/30 to-indigo-50">
-          {/* Background decoration - contained within section */}
           <div className="absolute inset-0 overflow-hidden pointer-events-none">
             <div className="absolute -top-1/2 -right-1/4 w-[300px] h-[300px] sm:w-[500px] sm:h-[500px] lg:w-[700px] lg:h-[700px] bg-linear-to-br from-blue-200/30 to-purple-200/30 rounded-full blur-3xl"></div>
             <div className="absolute -bottom-1/4 -left-1/4 w-[250px] h-[250px] sm:w-[400px] sm:h-[400px] lg:w-[500px] lg:h-[500px] bg-linear-to-tr from-indigo-200/25 to-pink-200/25 rounded-full blur-3xl"></div>
@@ -130,14 +128,11 @@ export default function Home() {
               <div className="container mx-auto px-4 sm:px-6 lg:px-8 pt-6 sm:pt-8 lg:pt-12 pb-16 sm:pb-20 lg:pb-16">
                 <div className="flex flex-col lg:flex-row gap-5 sm:gap-8 lg:gap-12 items-center">
 
-                  {/* Hero Image - On top for mobile */}
                   <div className={`w-full lg:w-1/2 lg:order-2 transition-all duration-700 delay-100 ${index === currentSlide ? 'opacity-100 scale-100' : 'opacity-0 scale-90'}`}>
                     <div className="relative mx-auto max-w-[280px] sm:max-w-[320px] lg:max-w-[400px]">
-                      {/* Decorative elements - smaller on mobile */}
                       <div className="absolute -inset-3 sm:-inset-5 lg:-inset-6 bg-linear-to-br from-blue-400/15 via-purple-400/15 to-pink-400/15 rounded-2xl sm:rounded-3xl transform rotate-3 blur-sm"></div>
                       <div className="absolute -inset-1.5 sm:-inset-2 lg:-inset-3 bg-linear-to-tl from-indigo-400/10 to-cyan-400/10 rounded-xl sm:rounded-2xl transform -rotate-2"></div>
 
-                      {/* Main image container */}
                       <div className="relative bg-white/90 backdrop-blur-sm p-2 sm:p-3 lg:p-4 rounded-xl sm:rounded-2xl lg:rounded-3xl shadow-lg sm:shadow-xl">
                         <div className="relative aspect-4/3 bg-linear-to-br from-gray-50 to-gray-100 rounded-lg sm:rounded-xl lg:rounded-2xl overflow-hidden">
                           <Image
@@ -150,7 +145,6 @@ export default function Home() {
                           />
                         </div>
 
-                        {/* Floating badge - hidden on very small screens */}
                         <div className="hidden xs:block absolute -bottom-2 -right-2 sm:-bottom-3 sm:-right-3 bg-white rounded-lg sm:rounded-xl shadow-lg px-2 py-1 sm:px-3 sm:py-2">
                           <div className="flex items-center gap-1.5 sm:gap-2">
                             <div className="w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-linear-to-br from-blue-500 to-purple-500 flex items-center justify-center">
@@ -328,7 +322,7 @@ export default function Home() {
                   const productSlug = product.name?.toLowerCase().replace(/[^\w\s-]/g, '').replace(/\s+/g, '-');
                   const imageSrc = productImage || `/uploads/products/${productSlug}.png`;
                   return (
-                    <Link key={product.productid} href={`/product/${product.productid}`} className="shrink-0 w-[75%] sm:w-[48%] lg:w-full snap-center">
+                    <Link key={product._id} href={`/product/${product._id}`} className="shrink-0 w-[75%] sm:w-[48%] lg:w-full snap-center">
                       <div
                         className={`group bg-white rounded-xl sm:rounded-2xl shadow-sm hover:shadow-xl lg:hover:shadow-2xl transition-all duration-500 lg:hover:-translate-y-2 h-full ${isVisible['section-products']
                           ? `opacity-100 translate-y-0`
