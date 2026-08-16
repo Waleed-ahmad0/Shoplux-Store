@@ -107,7 +107,7 @@ export default function UserOrdersDashboard() {
     if (status === "authenticated") {
       const fetchUserOrders = async () => {
         try {
-          const getthedata = await fetch(`/api/order/${data.user.id}`, { cache: 'no-store' })
+          const getthedata = await fetch(`/api/order`, { cache: 'no-store' })
           const apidata = await getthedata.json()
           setOrders(apidata);
         } catch (error) {

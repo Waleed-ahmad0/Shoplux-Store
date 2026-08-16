@@ -3,16 +3,16 @@ import mongoose, { Schema, model, models } from "mongoose";
 const reviewSchema = new Schema(
     {
         userId: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'User',
             required: [true, 'User is required'],
-            index: true // Fast lookups by user
+            index: true 
         },
         productId: {
-            type: String,
+            type: mongoose.Schema.Types.ObjectId,
             ref: 'Product',
             required: [true, 'Product is required'],
-            index: true // Fast lookups by product
+            index: true 
         },
         rating: {
             type: Number,
@@ -41,7 +41,7 @@ const reviewSchema = new Schema(
         verified: {
             type: Boolean,
             default: false,
-            index: true // Filter verified reviews
+            index: true 
         },
         status: {
             type: String,
@@ -50,7 +50,7 @@ const reviewSchema = new Schema(
                 message: '{VALUE} is not a valid status'
             },
             default: 'pending',
-            index: true // Filter by status
+            index: true 
         },
         helpfulCount: {
             type: Number,
@@ -63,30 +63,21 @@ const reviewSchema = new Schema(
     }
 );
 
-// ===== INDEXES FOR OPTIMIZATION & SCALABILITY =====
 
-// Unique compound index: Prevent duplicate reviews from same user for same product
 reviewSchema.index({ userId: 1, productId: 1 }, { unique: true });
 
-// Compound index: Product reviews by status and date (most common query for product pages)
 reviewSchema.index({ productId: 1, status: 1, createdAt: -1 });
 
-// Compound index: Product reviews by rating (sorting by rating)
 reviewSchema.index({ productId: 1, rating: -1, createdAt: -1 });
 
-// Compound index: User's reviews sorted by date
 reviewSchema.index({ userId: 1, createdAt: -1 });
 
-// Compound index: Approved reviews for a product (public display)
 reviewSchema.index({ productId: 1, status: 1, verified: 1, createdAt: -1 });
 
-// Index for most helpful reviews
 reviewSchema.index({ productId: 1, helpfulCount: -1 });
 
-// Admin: Pending reviews to moderate
 reviewSchema.index({ status: 1, createdAt: 1 });
 
-// Index for calculating average rating per product
 reviewSchema.index({ productId: 1, rating: 1 });
 
 const Review = models.Review || model('Review', reviewSchema);

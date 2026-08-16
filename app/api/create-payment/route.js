@@ -10,7 +10,7 @@ export async function POST(request) {
         if (!session) {
             return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
         }
-    const { amount, email, orderId } = await request.json();
+    const { amount, email } = await request.json();
 
     if (!amount || amount <= 0) {
       return Response.json(
@@ -18,7 +18,13 @@ export async function POST(request) {
         { status: 400 }
       );
     }
+ const generateOrderId = () => {
+            const timestamp = Date.now().toString(36);
+            const random = Math.random().toString(36).substring(2, 11);
+            return `ORD-${timestamp}-${random}`.toUpperCase();
+        };
 
+        const orderId= generateOrderId()
     const paymentIntent = await stripe.paymentIntents.create({
       amount: Math.round(amount * 100),
       currency: 'usd',

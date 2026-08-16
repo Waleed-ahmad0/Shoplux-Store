@@ -2,7 +2,7 @@ import mongoose, { model, models, Schema } from "mongoose";
 
 const orderSchema = new Schema({
   userId: {
-    type: String,
+    type: mongoose.Schema.Types.ObjectId,
     required: true,
     index: true // Fast lookups by user
   },
@@ -10,7 +10,7 @@ const orderSchema = new Schema({
     type: String,
     required: true,
     unique: true,
-    index: true // Unique order lookups
+    index: true 
   },
 
   orderedItems: [{
@@ -44,7 +44,7 @@ const orderSchema = new Schema({
     required: true,
     enum: ['pending', 'paid', 'failed', 'refunded'],
     default: 'pending',
-    index: true // Filter orders by payment status
+    index: true 
   },
 
   paymentDate: {

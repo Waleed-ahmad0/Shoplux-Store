@@ -23,8 +23,9 @@ export default function CompletedOrdersPage() {
         if (status === 'authenticated') {
             (async () => {
                 try {
-                    const orders = await fetch(`/api/order/${data.user.id}`);
+                    const orders = await fetch(`/api/order`);
                     const response = await orders.json();
+                    console.log(response)
                     setOrders(response);
                 } catch (error) {
                     console.error('Error fetching completed orders:', error);
@@ -36,7 +37,6 @@ export default function CompletedOrdersPage() {
         }
     }, [status, data]);
 
-    // Close dropdown when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -74,7 +74,7 @@ export default function CompletedOrdersPage() {
 
         setIsSubmittingReturn(true);
         try {
-            const response = await fetch(`/api/order/${data.user.id}`, {
+            const response = await fetch(`/api/order`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({

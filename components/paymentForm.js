@@ -6,8 +6,7 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
-import { toast } from 'react-hot-toast'
-export default function PaymentForm({ orderId, amount, email, onSuccess, onError, handlePlaceOrder, createOrderInDatabase,  }) {
+export default function PaymentForm({  amount, email, onSuccess, onError, handlePlaceOrder,   }) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -16,8 +15,6 @@ export default function PaymentForm({ orderId, amount, email, onSuccess, onError
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    // Ask parent to validate and prepare. It should return an orderId string to proceed, or false to abort.
-    let returnedOrderId = null;
     if (typeof handlePlaceOrder === 'function') {
       try {
         const result = await handlePlaceOrder();
@@ -39,8 +36,6 @@ export default function PaymentForm({ orderId, amount, email, onSuccess, onError
     setLoading(true);
 
     try {
-      // Step 1: Create Payment Intent from your backend
-      const orderIdToUse = returnedOrderId || orderId;
       const response = await fetch('/api/create-payment', {
         method: 'POST',
         headers: {
@@ -49,7 +44,6 @@ export default function PaymentForm({ orderId, amount, email, onSuccess, onError
         body: JSON.stringify({
           amount,
           email,
-          orderId: orderIdToUse,
         }),
       });
 
@@ -60,7 +54,6 @@ export default function PaymentForm({ orderId, amount, email, onSuccess, onError
         throw new Error(data.error || 'Failed to create payment intent');
       }
 
-      // Step 2: Confirm payment with Stripe
       const result = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
@@ -75,9 +68,7 @@ export default function PaymentForm({ orderId, amount, email, onSuccess, onError
         if (onError) onError(result.error.message);
       } else if (result.paymentIntent.status === 'succeeded') {
         setSuccess(true);
-        // Pass orderId along with payment intent id so parent can create order in DB
-        const usedOrderId = returnedOrderId || orderId;
-        if (onSuccess) onSuccess(result.paymentIntent.id, usedOrderId);
+        if (onSuccess) onSuccess(result.paymentIntent.id);
       }
     } catch (err) {
       setError(err.message);

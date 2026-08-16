@@ -302,7 +302,7 @@ export default function ProductPage({ params }) {
 
     try {
       const productdata = {
-        productId: product.productid,
+        productId: product._id,
         userId: data.user.id,
         name: product.name,
         brand: product.brand,

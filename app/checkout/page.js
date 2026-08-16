@@ -9,22 +9,15 @@ import PaymentForm from '@/components/paymentForm';
 import Image from 'next/image';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-import Link from 'next/link';
 
 const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY);
 
-const generateOrderId = () => {
-    const timestamp = Date.now().toString(36);
-    const random = Math.random().toString(36).substring(2, 11);
-    return `ORD-${timestamp}-${random}`.toUpperCase();
-};
+
 
 const CheckoutPage = () => {
     const [paymentMethod, setPaymentMethod] = useState('card');
-    const [pendingOrderId, setPendingOrderId] = useState(null);
-    const [shippingMethod, setShippingMethod] = useState('standard');
+    const [shippingMethod, setShippingMethod] = useState('standard')
     const { data, status } = useSession()
-    const [newsletterSubscribe, setNewsletterSubscribe] = useState(false);
     const [orderItems, setorderitems] = useState([])
     const [errorhandle, seterrorhandle] = useState(false)
     const [isProcessingPayment, setIsProcessingPayment] = useState(false);
@@ -44,7 +37,9 @@ const CheckoutPage = () => {
         if (status === "authenticated" && data) {
             const getcartitems = async () => {
                 const response = await fetch(`/api/cart/${data.user.id}`)
+
                 const cartData = await response.json()
+                console.log(cartData)
                 const cleanedItems = cartData.map(({ userId, stockCount, ...item }) => item)
                 setorderitems(cleanedItems)
             }
@@ -67,10 +62,9 @@ const CheckoutPage = () => {
 
 
 
-    const createOrderInDatabase = async (orderId, paymentStatus) => {
+    const createOrderInDatabase = async (paymentStatus) => {
         const orderedItems = orderItems.map(({ _id, ...item }) => item)
         const finaldata = {
-            orderId,
             orderedItems: orderedItems,
             paymentMethod,
             paymentStatus,
@@ -84,13 +78,13 @@ const CheckoutPage = () => {
         };
 
         try {
-            const sendcheckout = await fetch(`/api/order/${data.user.id}`, {
+            const sendcheckout = await fetch(`/api/order`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(finaldata),
             });
             const response = await sendcheckout.json();
-
+console.log(response)
             if (!sendcheckout.ok) {
                 return { ok: false, error: response?.error || 'Failed to create order' };
             }
@@ -115,8 +109,7 @@ const CheckoutPage = () => {
             seterrorhandle(false)
 
             if (paymentMethod === 'cod') {
-                const orderId = generateOrderId();
-                await createOrderInDatabase(orderId, 'pending');
+                await createOrderInDatabase( 'pending');
                 toast.success('Order placed successfully!', { position: 'top-center' });
                 setTimeout(() => {
                     router.replace('/dashboard');
@@ -124,12 +117,6 @@ const CheckoutPage = () => {
                 return false;
             }
 
-            if (paymentMethod === 'card') {
-                const orderId = generateOrderId();
-                setPendingOrderId(orderId);
-                setIsProcessingPayment(true);
-                return orderId;
-            }
 
             return false;
         } catch (error) {
@@ -142,11 +129,9 @@ const CheckoutPage = () => {
 
     const handleStripePaymentSuccess = async (paymentIntentId, orderIdFromForm) => {
         try {
-            const orderId = orderIdFromForm || pendingOrderId || generateOrderId();
-            const result = await createOrderInDatabase(orderId, 'paid');
+            const result = await createOrderInDatabase( 'paid');
             if (result.ok) {
                 toast.success('Order placed successfully!', { position: 'top-center' });
-                setPendingOrderId(null);
                 setIsProcessingPayment(false);
                 router.replace('/dashboard');
             } else {
@@ -460,14 +445,13 @@ const CheckoutPage = () => {
                             {paymentMethod === 'card' ? (
                                 <Elements stripe={stripePromise}>
                                     <PaymentForm
-                                        orderId={pendingOrderId}
                                         amount={total}
                                         email={shippingForm.email}
                                         onSuccess={handleStripePaymentSuccess}
                                         onError={handleStripePaymentError}
                                         isProcessing={isProcessingPayment}
                                         handlePlaceOrder={handlePlaceOrder}
-                                        createOrderInDatabase={createOrderInDatabase}
+                                        // createOrderInDatabase={createOrderInDatabase}
                                     />
                                 </Elements>
                             ) : (
