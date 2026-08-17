@@ -4,7 +4,6 @@ import { use, useEffect } from 'react';
 // import { ToastContainer, toast } from 'react-toastify';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { notFound } from 'next/navigation';
 import Image from 'next/image';
 import Link from 'next/link';
 import { useSession } from 'next-auth/react';
@@ -122,7 +121,6 @@ export default function ProductPage({ params }) {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [availableAttributes, setAvailableAttributes] = useState({});
-  const [CombinationError, setCombinationError] = useState('')
   const [filteredreviews, setfilteredreviews] = useState([])
   const [avgrating, setavgrating] = useState(0)
 
@@ -132,7 +130,6 @@ export default function ProductPage({ params }) {
       try {
         setLoading(true);
         setError(null);
-        setCombinationError('');
 
         const response = await fetch(`/api/products`);
         if (!response.ok) {
@@ -205,16 +202,12 @@ export default function ProductPage({ params }) {
     );
   }
 
-  // IMPROVED: Handle attribute selection with better variant switching
   const handleAttributeChange = (attributeType, value) => {
     setCombinationError('');
 
-    // Try to update with the selected attribute value
     let newAttributes = { ...selectedAttributes, [attributeType]: value };
 
-    // Check if this combination exists
     if (!isCombinationAvailable(product.variants, newAttributes)) {
-      // Find the closest available variant with this attribute value
       const closestVariant = findClosestVariant(product.variants, attributeType, value);
 
       if (closestVariant && closestVariant.attributes) {
@@ -223,26 +216,21 @@ export default function ProductPage({ params }) {
     }
 
     setSelectedAttributes(newAttributes);
-    // FIXED: Always reset to first image when changing variants
     setPictureNo(0);
   };
 
-  // Get current selected variant data
   const getSelectedVariant = () => {
     if (!product || !product.variants) return null;
     return findVariantByAttributes(product.variants, selectedAttributes);
   };
 
-  // Get available options for an attribute based on current selection
   const getFilteredOptions = (attributeType) => {
     if (!product || !product.variants) return [];
     return getAvailableOptions(product.variants, attributeType, selectedAttributes);
   };
 
-  // Check if current combination is valid (in stock)
   const isCombinationValid = !!getSelectedVariant();
 
-  // Retry loading product
   const handleRetry = () => {
     setLoading(true);
     setError(null);
@@ -252,12 +240,10 @@ export default function ProductPage({ params }) {
     }, 1000);
   };
 
-  // Show loading screen
   if (loading) {
     return <LoadingScreen message="Loading product..." />;
   }
 
-  // Show error screen
   if (error) {
     return <ErrorScreen message={error} onRetry={handleRetry} />;
   }
@@ -289,7 +275,6 @@ export default function ProductPage({ params }) {
     );
   };
 
-  // IMPROVED: Add to cart with loading state
   const addingtocart = async () => {
     if (!data?.user?.id) {
       toast.error('Please login to add items to cart', {
@@ -384,7 +369,6 @@ export default function ProductPage({ params }) {
         <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 lg:gap-12 xl:gap-16">
 
-            {/* Product Images - Left Side */}
             <div className="space-y-3 sm:space-y-4 lg:space-y-6">
               <div className="aspect-square bg-white rounded-xl sm:rounded-2xl shadow-md sm:shadow-lg border border-gray-200 overflow-hidden group relative">
                 {images.length > 0 ? (
@@ -430,7 +414,6 @@ export default function ProductPage({ params }) {
                   </>
                 )}
 
-                {/* Image counter on mobile */}
                 {images.length > 1 && (
                   <div className="absolute bottom-2 sm:bottom-3 left-1/2 transform -translate-x-1/2 bg-black/60 text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full lg:hidden">
                     {pictureno + 1} / {images.length}
@@ -438,7 +421,6 @@ export default function ProductPage({ params }) {
                 )}
               </div>
 
-              {/* Thumbnails - Horizontal scroll on mobile, grid on larger screens */}
               {images.length > 1 && (
                 <div className="flex lg:grid lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 scrollbar-hide">
                   {images.map((img, idx) => (
@@ -459,16 +441,13 @@ export default function ProductPage({ params }) {
               )}
             </div>
 
-            {/* Product Info - Right Side */}
             <div className="lg:pl-4 xl:pl-8 space-y-4 sm:space-y-6 lg:space-y-8">
-              {/* Brand */}
               {product.brand && (
                 <div className="text-sm sm:text-base lg:text-lg font-semibold text-blue-600">
                   {product.brand}
                 </div>
               )}
 
-              {/* Title & Price */}
               <div className="space-y-2 sm:space-y-3 lg:space-y-4">
                 <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 leading-tight">
                   {product.name}
@@ -515,7 +494,6 @@ export default function ProductPage({ params }) {
 
               </div>
 
-              {/* Variant Selectors */}
               {Object.keys(availableAttributes).length > 0 && (
                 <div className="space-y-4 sm:space-y-5 lg:space-y-6 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200">
                   <h3 className="text-base sm:text-lg font-semibold text-gray-900">Select Options</h3>
@@ -561,7 +539,6 @@ export default function ProductPage({ params }) {
               )}
 
               <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 space-y-4 sm:space-y-5 lg:space-y-6">
-                {/* Quantity Selector */}
                 <div className="space-y-2 sm:space-y-3">
                   <label className="block text-sm font-semibold text-gray-700">Quantity</label>
                   <div className="flex items-center space-x-2 sm:space-x-3 lg:space-x-4">
@@ -598,7 +575,6 @@ export default function ProductPage({ params }) {
                   )}
                 </div>
 
-                {/* Add to Cart Button with Loading State */}
                 <button
                   onClick={addingtocart}
                   disabled={isAddingToCart || stockCount === 0 || !isCombinationValid}
@@ -633,7 +609,6 @@ export default function ProductPage({ params }) {
       </div>
 
       <Footer />
-      {/* Custom scrollbar hiding styles */}
       <style jsx global>{`
         .scrollbar-hide {
           -ms-overflow-style: none;

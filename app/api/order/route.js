@@ -7,6 +7,7 @@ import Cart from "@/models/cart"
 import Product from "@/models/product";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
+import { computeOrderTotal } from "@/lib/pricing";
 
 export async function GET() {
     try {
@@ -35,7 +36,8 @@ export async function POST(req) {
         if (!body) {
             return NextResponse.json({ error: "body is required" }, { status: 400 });
         }
-
+        const { verifiedItems, subtotal, shippingCost, tax, total } =
+            await computeOrderTotal(body.orderedItems, body.shippingMethod);
         const generateOrderId = () => {
             const timestamp = Date.now().toString(36);
             const random = Math.random().toString(36).substring(2, 11);
@@ -48,49 +50,17 @@ export async function POST(req) {
 
         await dbConnect();
 
-        let total = 0;
-        const verifiedItems = [];
-
         await Promise.all(
-            body.orderedItems.map(async item => {
-                let check;
-                if (mongoose.Types.ObjectId.isValid(item.productId)) {
-                    check = await Product.findById(item.productId);
-                }
-                if (!check) {
-                    throw new Error(`Product not found: ${item.productId}`);
-                }
-                for (const variant of check.variants) {
-                    const variantsObject = Object.fromEntries(variant.attributes);
-
-                    if (_.isEqual(item.selectedVariant, variantsObject)) {
-                        if (variant.stockCount < item.quantity) {
-                            throw new Error(`Insufficient stock for ${check.name}`);
-                        }
-
-                        const unitPrice = variant.salePrice ?? variant.price;
-                        total += unitPrice * item.quantity;
-                        verifiedItems.push({
-                            productId: check._id,
-                            name: check.name,
-                            brand: check.brand,
-                            price:unitPrice,
-                            quantity: item.quantity,
-                            image: variant.images[0],
-                            selectedVariant: item.selectedVariant,
-                            
-                        });
-                        variant.stockCount -= item.quantity;
-                        await check.save();
-                        break;
-                    }
-                }
+            verifiedItems.map(async (item) => {
+                const product = await Product.findById(item.productId);
+                const variant = product.variants.find((v) =>
+                    _.isEqual(Object.fromEntries(v.attributes), item.selectedVariant)
+                );
+                variant.stockCount -= item.quantity;
+                await product.save();
             })
-        )
-        const datafordb = {
-            ...body, userId, orderId, orderedItems: verifiedItems,
-            total,
-        };
+        );
+        const datafordb = { ...body, userId, orderId, orderedItems: verifiedItems, subtotal, shippingCost, tax, total };
 
         await Cart.deleteMany({ userId })
         const result = await Order.create(datafordb);

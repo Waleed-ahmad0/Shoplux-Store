@@ -6,7 +6,7 @@ import {
   useStripe,
   useElements,
 } from '@stripe/react-stripe-js';
-export default function PaymentForm({  amount, email, onSuccess, onError, handlePlaceOrder,   }) {
+export default function PaymentForm({ shippingMethod, items, amount, email, onSuccess, onError, handlePlaceOrder, }) {
   const stripe = useStripe();
   const elements = useElements();
   const [loading, setLoading] = useState(false);
@@ -19,8 +19,6 @@ export default function PaymentForm({  amount, email, onSuccess, onError, handle
       try {
         const result = await handlePlaceOrder();
         if (!result) return;
-        // result should be the orderId string for card payments
-        returnedOrderId = result;
       } catch (err) {
         console.error('Validation error from parent:', err);
         return;
@@ -42,13 +40,14 @@ export default function PaymentForm({  amount, email, onSuccess, onError, handle
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          amount,
+          shippingMethod,
+          items,
           email,
         }),
       });
 
       const data = await response.json();
-
+      console.log(data)
 
       if (!response.ok) {
         throw new Error(data.error || 'Failed to create payment intent');
@@ -68,7 +67,7 @@ export default function PaymentForm({  amount, email, onSuccess, onError, handle
         if (onError) onError(result.error.message);
       } else if (result.paymentIntent.status === 'succeeded') {
         setSuccess(true);
-        if (onSuccess) onSuccess(result.paymentIntent.id);
+        if (onSuccess) onSuccess(result.paymentIntent.id, data.orderId);
       }
     } catch (err) {
       setError(err.message);

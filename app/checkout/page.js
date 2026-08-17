@@ -39,7 +39,6 @@ const CheckoutPage = () => {
                 const response = await fetch(`/api/cart/${data.user.id}`)
 
                 const cartData = await response.json()
-                console.log(cartData)
                 const cleanedItems = cartData.map(({ userId, stockCount, ...item }) => item)
                 setorderitems(cleanedItems)
             }
@@ -84,7 +83,7 @@ const CheckoutPage = () => {
                 body: JSON.stringify(finaldata),
             });
             const response = await sendcheckout.json();
-console.log(response)
+            // console.log(response)
             if (!sendcheckout.ok) {
                 return { ok: false, error: response?.error || 'Failed to create order' };
             }
@@ -109,16 +108,16 @@ console.log(response)
             seterrorhandle(false)
 
             if (paymentMethod === 'cod') {
-                await createOrderInDatabase( 'pending');
+                await createOrderInDatabase('pending');
                 toast.success('Order placed successfully!', { position: 'top-center' });
                 setTimeout(() => {
-                    router.replace('/dashboard');
+                    // router.replace('/dashboard');
                 }, 1000);
                 return false;
             }
 
-
-            return false;
+            // Card payment — return true so PaymentForm proceeds with Stripe
+            return true;
         } catch (error) {
             console.error(error)
             toast.error("Error placing order", { position: "top-center" })
@@ -127,17 +126,12 @@ console.log(response)
         }
     };
 
-    const handleStripePaymentSuccess = async (paymentIntentId, orderIdFromForm) => {
+    const handleStripePaymentSuccess = async (paymentIntentId, orderId) => {
         try {
-            const result = await createOrderInDatabase( 'paid');
-            if (result.ok) {
-                toast.success('Order placed successfully!', { position: 'top-center' });
-                setIsProcessingPayment(false);
-                router.replace('/dashboard');
-            } else {
-                toast.error(result.error || 'Order creation failed', { position: 'top-center' });
-                setIsProcessingPayment(false);
-            }
+            toast.success('Order placed successfully!', { position: 'top-center' });
+            setIsProcessingPayment(false);
+            await createOrderInDatabase('paid', paymentIntentId, orderId);
+            router.replace('/dashboard');
         } catch (error) {
             console.error(error);
             toast.error('Error completing order', { position: 'top-center' });
@@ -262,7 +256,7 @@ console.log(response)
                                         required
                                     />
                                 </div>
-                                
+
                                 <div>
                                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-1.5">ZIP *</label>
                                     <input
@@ -439,19 +433,20 @@ console.log(response)
                             </div>
 
                             {/* Terms Checkbox */}
-                            
+
 
                             {/* Place Order Button */}
                             {paymentMethod === 'card' ? (
                                 <Elements stripe={stripePromise}>
                                     <PaymentForm
                                         amount={total}
+                                        shippingMethod={shippingMethod}
+                                        items={orderItems}
                                         email={shippingForm.email}
                                         onSuccess={handleStripePaymentSuccess}
                                         onError={handleStripePaymentError}
                                         isProcessing={isProcessingPayment}
                                         handlePlaceOrder={handlePlaceOrder}
-                                        // createOrderInDatabase={createOrderInDatabase}
                                     />
                                 </Elements>
                             ) : (
