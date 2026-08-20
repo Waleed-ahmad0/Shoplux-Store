@@ -4,100 +4,101 @@ import Cart from "@/models/cart";
 import { getServerSession } from "next-auth";
 import { NextResponse } from "next/server";
 
-export async function GET(request, { params }) {
+export async function GET() {
     try {
-         const session = await getServerSession(authOptions);
+        const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
+            return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
         }
-        const { userId } = await params
         await dbConnect();
-        const products = await Cart.find({ userId });
+        const products = await Cart.find({ userId: session.user.id });
         return NextResponse.json(products);
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
 
-export async function POST(req, { params }) {
-    try {
-         const session = await getServerSession(authOptions);
-        if (!session) {
-            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
-        }
-        const { userId } = await params
-        await dbConnect();
-        const body = await req.json();
-        if (!body) {
-            return NextResponse.json({ error: "body is undefined" }, { status: 400 });
-        }
-        const repeated = await Cart.findOne(
-            {
-                productId: body.productId,
-                userId,
-                selectedVariant: body.selectedVariant
-
-            })
-        if (repeated) {
-            return NextResponse.json({ error: "product already in the cart" });
-
-        }
-
-        const result = await Cart.create(body);
-
-        return NextResponse.json({ message: "sucessfully added in the cart", status: 201 })
-
-    } catch (err) {
-        return NextResponse.json({ error: err.message }, { status: 500 });
-    }
-}
-export async function DELETE(req, { params }) {
+export async function POST(req) {
     try {
         const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized', status: 401 })
+            return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
         }
+
         await dbConnect();
-        const data = await req.json()
-        if (!data) {
-            return NextResponse.json({ error: "data is missing" }, { status: 400 });
-
+        const body = await req.json();
+        if (!body?.productId || !body?.selectedVariant) {
+            return NextResponse.json({ error: "productId and selectedVariant are required" }, { status: 400 });
         }
 
-        const result = await Cart.findOneAndDelete({ selectedVariant: data.selectedVariant })
-        return NextResponse.json({ status: 200 });
+        const repeated = await Cart.findOne({
+            productId: body.productId,
+            userId: session.user.id,
+            selectedVariant: body.selectedVariant,
+        });
+        if (repeated) {
+            return NextResponse.json({ error: "product already in the cart" }, { status: 409 });
+        }
+
+        await Cart.create({ ...body, userId: session.user.id });
+
+        return NextResponse.json({ message: "successfully added to cart" }, { status: 201 });
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
-export async function PATCH(request, { params }) {
 
+export async function DELETE(req) {
     try {
-         const session = await getServerSession(authOptions);
+        const session = await getServerSession(authOptions);
         if (!session) {
-            return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
+            return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
         }
-        const { userId } = await params
-        if (!userId) {
-            return NextResponse.json({ error: "user id is missing", data }, { status: 400 });
+        await dbConnect();
+        const data = await req.json();
+        if (!data?.productId || !data?.selectedVariant) {
+            return NextResponse.json({ error: "productId and selectedVariant are required" }, { status: 400 });
+        }
 
+        await Cart.findOneAndDelete({
+            userId: session.user.id,
+            productId: data.productId,
+            selectedVariant: data.selectedVariant,
+        });
+        return NextResponse.json({ success: true }, { status: 200 });
+    } catch (err) {
+        return NextResponse.json({ error: err.message }, { status: 500 });
+    }
+}
+
+export async function PATCH(request) {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
         }
+
         await dbConnect();
         const data = await request.json();
         if (typeof data.quantity !== 'number' || data.quantity <= 0) {
-            return NextResponse.json({ error: "Quantity must be a positive integer", data }, { status: 400 });
+            return NextResponse.json({ error: "Quantity must be a positive integer" }, { status: 400 });
         }
-        if (!data.id) {
-            return NextResponse.json({ error: "id is missing" }, { status: 400 });
+        if (!data.id || !data.selectedVariant) {
+            return NextResponse.json({ error: "id and selectedVariant are required" }, { status: 400 });
         }
-        const result = await Cart.findOneAndUpdate(
 
-            { userId, productId: data.id },
+        const result = await Cart.findOneAndUpdate(
+            { userId: session.user.id, productId: data.id, selectedVariant: data.selectedVariant },
             { $set: { quantity: data.quantity } },
-            { returnDocument: 'after' }
+            { new: true }
         );
+
+        if (!result) {
+            return NextResponse.json({ error: "cart item not found" }, { status: 404 });
+        }
+
         return NextResponse.json({ success: true, result });
     } catch (error) {
-        return NextResponse.json({ "internal server error": error.toString() });
+        return NextResponse.json({ error: error.toString() }, { status: 500 });
     }
 }

@@ -15,6 +15,11 @@ export default function PaymentForm({ shippingMethod, items, amount, email, onSu
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+  alert('want to save this address for future use ')
+  // if (alert.ok) {
+    
+  // }
     if (typeof handlePlaceOrder === 'function') {
       try {
         const result = await handlePlaceOrder();

@@ -361,7 +361,7 @@ export default function UserOrdersDashboard() {
                     </div>
 
                     {/* Expanded Details */}
-                    <div className={`overflow-hidden transition-all duration-300 bg-gray-50/50 ${expandedOrder === order.orderId ? 'max-h-[2000px] opacity-100 border-t border-gray-100' : 'max-h-0 opacity-0'}`}>
+                    <div className={`overflow-hidden transition-all duration-300 bg-gray-50/50 ${expandedOrder === order.orderId ? 'max-h-500 opacity-100 border-t border-gray-100' : 'max-h-0 opacity-0'}`}>
                       <div className="p-5 sm:p-6">
                         <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                           {/* Order Items */}
