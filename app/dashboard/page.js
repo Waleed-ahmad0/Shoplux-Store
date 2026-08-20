@@ -6,7 +6,6 @@ import { useState, useEffect, useRef } from 'react';
 import LoadingScreen from '@/components/LoadingScreen';
 import Navbar from '@/components/Navbar';
 import Footer from '@/components/Footer';
-
 export default function CompletedOrdersPage() {
     const [orders, setOrders] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -18,7 +17,6 @@ export default function CompletedOrdersPage() {
     const [isSubmittingReturn, setIsSubmittingReturn] = useState(false);
     const { data, status } = useSession();
     const dropdownRef = useRef(null);
-
     useEffect(() => {
         if (status === 'authenticated') {
             (async () => {
@@ -36,42 +34,34 @@ export default function CompletedOrdersPage() {
             })();
         }
     }, [status, data]);
-
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
                 setShowFilterDropdown(false);
             }
         };
-
         if (showFilterDropdown) {
             document.addEventListener('mousedown', handleClickOutside);
             document.addEventListener('touchstart', handleClickOutside);
         }
-
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
             document.removeEventListener('touchstart', handleClickOutside);
         };
     }, [showFilterDropdown]);
-
     const toggleOrderExpansion = (orderId) => {
         setExpandedOrder(expandedOrder === orderId ? null : orderId);
     };
-
     const toggleFilterDropdown = () => {
         setShowFilterDropdown(!showFilterDropdown);
     };
-
     const handleFilterSelect = (filter) => {
         setStatusFilter(filter);
         setShowFilterDropdown(false);
     };
-
     const handleReturnOrder = async (e) => {
         e.preventDefault();
         if (!returnReason.trim()) return;
-
         setIsSubmittingReturn(true);
         try {
             const response = await fetch(`/api/order`, {
@@ -83,21 +73,15 @@ export default function CompletedOrdersPage() {
                     returnReason: returnReason
                 })
             });
-
             if (!response.ok) throw new Error('Failed to submit return request');
-
             const updatedOrder = await response.json();
-
-            // Update local state
             setOrders(orders.map(order =>
                 order.orderId === returnModal.orderId
                     ? { ...order, status: 'returned' }
                     : order
             ));
-
             setReturnModal({ show: false, orderId: null });
             setReturnReason('');
-            // Optional: Show success toast/message
         } catch (error) {
             console.error('Error returning order:', error);
             alert('Failed to submit return request. Please try again.');
@@ -105,7 +89,6 @@ export default function CompletedOrdersPage() {
             setIsSubmittingReturn(false);
         }
     };
-
     const formatDate = (dateString) => {
         if (!dateString) return 'Never';
         return new Date(dateString).toLocaleDateString('en-US', {
@@ -114,11 +97,9 @@ export default function CompletedOrdersPage() {
             day: 'numeric'
         });
     };
-
     const formatShippingAddress = (shippingForm) => {
         return `${shippingForm.address}${shippingForm.apartment ? ', ' + shippingForm.apartment : ''}, ${shippingForm.city}, ${shippingForm.state} ${shippingForm.zipCode}`;
     };
-
     const getStatusBadge = (status) => {
         const styles = {
             delivered: 'bg-green-100 text-green-800 border border-green-200',
@@ -128,7 +109,6 @@ export default function CompletedOrdersPage() {
         };
         return styles[status.toLowerCase()] || 'bg-gray-100 text-gray-800 border border-gray-200';
     };
-
     const getFilterLabel = (filter) => {
         const labels = {
             all: 'All Orders',
@@ -139,19 +119,16 @@ export default function CompletedOrdersPage() {
         };
         return labels[filter] || 'All Orders';
     };
-
     const filteredOrders = orders
         .filter(order => {
             if (statusFilter === 'all') return true;
             return order.status.toLowerCase() === statusFilter;
         })
-        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); // Newest first
-
+        .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)); 
     const deliveredOrders = orders.filter(order => order.status.toLowerCase() === 'delivered');
     const cancelledOrders = orders.filter(order => order.status.toLowerCase() === 'cancelled');
     const pendingOrders = orders.filter(order => order.status.toLowerCase() === 'pending');
     const returnedOrders = orders.filter(order => order.status.toLowerCase() === 'returned');
-
     const getFilteredStats = () => {
         switch (statusFilter) {
             case 'pending':
@@ -191,19 +168,14 @@ export default function CompletedOrdersPage() {
                 };
         }
     };
-
     const stats = getFilteredStats();
-
     if (loading) {
         return <LoadingScreen message="Loading your orders..." />;
     }
-
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <Navbar />
-
             <main className="grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8">
-                {/* Header Section */}
                 <div className="mb-6 sm:mb-8 lg:mb-10">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4 sm:mb-6">
                         <div>
@@ -225,10 +197,7 @@ export default function CompletedOrdersPage() {
                     </div>
                     <div className="h-px bg-gray-200"></div>
                 </div>
-
-                {/* Filter Section */}
                 <div className="mb-6 sm:mb-8 lg:mb-10">
-                    {/* Mobile Filter Dropdown */}
                     <div className="md:hidden relative" ref={dropdownRef}>
                         <button
                             onClick={toggleFilterDropdown}
@@ -252,8 +221,6 @@ export default function CompletedOrdersPage() {
                                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
                             </svg>
                         </button>
-
-                        {/* Dropdown Menu */}
                         {showFilterDropdown && (
                             <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-200 rounded-lg shadow-xl z-50 overflow-hidden">
                                 {[
@@ -285,8 +252,6 @@ export default function CompletedOrdersPage() {
                             </div>
                         )}
                     </div>
-
-                    {/* Desktop Filter Tabs */}
                     <div className="hidden md:flex flex-wrap gap-1 bg-gray-100 rounded-lg p-1">
                         {[
                             { key: 'all', label: 'All Orders', count: orders.length },
@@ -314,8 +279,6 @@ export default function CompletedOrdersPage() {
                         ))}
                     </div>
                 </div>
-
-                {/* Stats Cards */}
                 <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 mb-6 sm:mb-8 lg:mb-10">
                     {[
                         { label: 'Total Orders', value: stats.totalOrders, icon: 'M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2' },
@@ -341,15 +304,12 @@ export default function CompletedOrdersPage() {
                         </div>
                     ))}
                 </div>
-
-                {/* Orders List */}
                 <div className="space-y-3 sm:space-y-4">
                     {filteredOrders.map((order) => (
                         <div
                             key={order.orderId}
                             className="bg-white rounded-lg sm:rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition-shadow"
                         >
-                            {/* Order Header */}
                             <div
                                 className="p-3 sm:p-4 lg:p-5 cursor-pointer hover:bg-blue-50/50 transition-colors border-l-4 border-blue-600"
                                 onClick={() => toggleOrderExpansion(order.orderId)}
@@ -395,11 +355,8 @@ export default function CompletedOrdersPage() {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Expanded Order Details */}
                             {expandedOrder === order.orderId && (
                                 <div className="px-3 sm:px-4 lg:px-5 pb-4 sm:pb-5 lg:pb-6 border-t border-gray-200">
-                                    {/* Order Items */}
                                     <div className="mt-4 sm:mt-5">
                                         <h4 className="text-xs sm:text-sm font-bold text-gray-900 uppercase tracking-wide mb-3 sm:mb-4 flex items-center gap-2">
                                             <span>Order Items ({order.orderedItems?.length || 0})</span>
@@ -447,8 +404,6 @@ export default function CompletedOrdersPage() {
                                             ))}
                                         </div>
                                     </div>
-
-                                    {/* Order Summary */}
                                     <div className="mt-4 sm:mt-5 grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 p-3 sm:p-4 bg-blue-50 rounded-lg border border-blue-100">
                                         {[
                                             { label: 'Subtotal', value: `$${order.subtotal?.toFixed(2)}` },
@@ -462,8 +417,6 @@ export default function CompletedOrdersPage() {
                                             </div>
                                         ))}
                                     </div>
-
-                                    {/* Customer & Shipping Info */}
                                     <div className="mt-4 sm:mt-5 grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                                         <div>
                                             <h4 className="text-xs sm:text-sm font-bold text-gray-900 uppercase mb-2 sm:mb-3">Customer</h4>
@@ -480,8 +433,6 @@ export default function CompletedOrdersPage() {
                                             </div>
                                         </div>
                                     </div>
-
-                                    {/* Action Buttons */}
                                     <div className="mt-4 sm:mt-5 flex flex-wrap gap-2">
                                         {order.status.toLowerCase() === 'delivered' && (
                                             <button
@@ -503,8 +454,6 @@ export default function CompletedOrdersPage() {
                         </div>
                     ))}
                 </div>
-
-                {/* Empty State */}
                 {filteredOrders.length === 0 && !loading && (
                     <div className="text-center py-10 sm:py-12 lg:py-16 bg-white rounded-xl border border-gray-200 shadow-sm">
                         <div className="w-14 h-14 sm:w-16 sm:h-16 lg:w-20 lg:h-20 mx-auto mb-3 sm:mb-4 bg-blue-50 rounded-full flex items-center justify-center">
@@ -527,10 +476,7 @@ export default function CompletedOrdersPage() {
                     </div>
                 )}
             </main>
-
             <Footer />
-
-            {/* Return Modal */}
             {returnModal.show && (
                 <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center p-4 z-50">
                     <div className="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl animate-in fade-in zoom-in duration-200">
@@ -545,7 +491,6 @@ export default function CompletedOrdersPage() {
                                 Please let us know why you&apos;d like to return this order.
                             </p>
                         </div>
-
                         <form onSubmit={handleReturnOrder}>
                             <div className="mb-6">
                                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -559,7 +504,6 @@ export default function CompletedOrdersPage() {
                                     required
                                 />
                             </div>
-
                             <div className="flex gap-3">
                                 <button
                                     type="button"

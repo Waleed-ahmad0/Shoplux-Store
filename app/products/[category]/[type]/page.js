@@ -5,7 +5,6 @@ import Image from 'next/image';
 import Link from 'next/link';
 import LoadingScreen from '@/components/LoadingScreen';
 import React, { useState, useEffect, use, useCallback } from 'react';
-
 const CategoryWiseProducts = ({ params }) => {
     const paramsData = use(params);
     const type = decodeURIComponent(paramsData.type);
@@ -16,40 +15,31 @@ const CategoryWiseProducts = ({ params }) => {
     const [products, setproducts] = useState([]);
     const [categories, setcategories] = useState([]);
     const [reviews, setReviews] = useState([]);
-
-    // Filter states
     const [showFilterModal, setShowFilterModal] = useState(false);
     const [minPrice, setMinPrice] = useState('');
     const [maxPrice, setMaxPrice] = useState('');
     const [inStockOnly, setInStockOnly] = useState(false);
     const [sortBy, setSortBy] = useState('default');
     const [activeFiltersCount, setActiveFiltersCount] = useState(0);
-
-    // Calculate average rating for a product (memoized)
     const getAvgRating = useCallback((productId) => {
         const productReviews = reviews.filter(r => r.productId === productId);
         if (productReviews.length === 0) return 0;
         return productReviews.reduce((sum, r) => sum + r.rating, 0) / productReviews.length;
     }, [reviews]);
-
     useEffect(() => {
         const gettheproducts = async () => {
             const allproducts = await fetch(`/api/products`);
             const response = await allproducts.json();
             setproducts(response.filter(items => items.category.toLowerCase() === Category));
-
-            // Fetch reviews
             const reviewsRes = await fetch('/api/review');
             const reviewsData = await reviewsRes.json();
             setReviews(reviewsData);
         };
         gettheproducts();
     }, [Category]);
-
     useEffect(() => {
         setActiveCategory(type.toLowerCase());
     }, [type]);
-
     useEffect(() => {
         if (Category === "fashion") {
             setcategories([
@@ -69,30 +59,21 @@ const CategoryWiseProducts = ({ params }) => {
             ]);
         }
     }, [products, activeCategory, Category]);
-
-    // Apply filters and sorting
     useEffect(() => {
         setIsLoading(true);
-
         setTimeout(() => {
             let filtered = activeCategory === 'all'
                 ? [...products]
                 : products.filter(product => product.productType === activeCategory);
-
-            // Apply price filter
             if (minPrice !== '') {
                 filtered = filtered.filter(p => p.variants[0].price >= parseFloat(minPrice));
             }
             if (maxPrice !== '') {
                 filtered = filtered.filter(p => p.variants[0].price <= parseFloat(maxPrice));
             }
-
-            // Apply in-stock filter
             if (inStockOnly) {
                 filtered = filtered.filter(p => p.variants[0].stockCount > 0);
             }
-
-            // Apply sorting
             switch (sortBy) {
                 case 'price-low':
                     filtered.sort((a, b) => a.variants[0].price - b.variants[0].price);
@@ -104,7 +85,6 @@ const CategoryWiseProducts = ({ params }) => {
                     filtered.sort((a, b) => getAvgRating(b._id) - getAvgRating(a._id));
                     break;
                 case 'newest':
-                    // Sort by _id descending (assuming newer products have higher IDs)
                     filtered.sort((a, b) => b._id.localeCompare(a._id));
                     break;
                 case 'most-reviews':
@@ -117,13 +97,10 @@ const CategoryWiseProducts = ({ params }) => {
                 default:
                     break;
             }
-
             setFilteredProducts(filtered);
             setIsLoading(false);
         }, 300);
     }, [products, activeCategory, minPrice, maxPrice, inStockOnly, sortBy, reviews, getAvgRating]);
-
-    // Count active filters
     useEffect(() => {
         let count = 0;
         if (minPrice !== '') count++;
@@ -132,36 +109,28 @@ const CategoryWiseProducts = ({ params }) => {
         if (sortBy !== 'default') count++;
         setActiveFiltersCount(count);
     }, [minPrice, maxPrice, inStockOnly, sortBy]);
-
     const handleCategoryChange = (type) => {
         setActiveCategory(type);
     };
-
     const clearFilters = () => {
         setMinPrice('');
         setMaxPrice('');
         setInStockOnly(false);
         setSortBy('default');
     };
-
     const applyFilters = () => {
         setShowFilterModal(false);
     };
-
     return (
         <>
             <div className="min-h-screen bg-gray-50">
                 <Navbar />
                 <div className="max-w-7xl mx-auto px-3 sm:px-4 lg:px-6 xl:px-8 py-4 sm:py-6 lg:py-8">
-                    {/* Header Section */}
                     <div className="text-center mb-6 sm:mb-8 lg:mb-12">
                         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-gray-900 mb-2 sm:mb-3 lg:mb-4 capitalize">{Category} Collections</h1>
                         <p className="text-sm sm:text-base lg:text-lg text-gray-600">Discover the latest in {Category === 'electronics' ? 'technology and innovation' : 'style and fashion'}</p>
                     </div>
-
-                    {/* Category Filter + Filter Button Row */}
                     <div className="mb-4 sm:mb-6 lg:mb-8">
-                        {/* Mobile: Category select + Filter button */}
                         <div className="flex sm:hidden gap-2 px-1">
                             <select
                                 value={activeCategory}
@@ -187,8 +156,6 @@ const CategoryWiseProducts = ({ params }) => {
                                 )}
                             </button>
                         </div>
-
-                        {/* Desktop: Horizontal pills + Filter button */}
                         <div className="hidden sm:flex items-center justify-between gap-4">
                             <div className="flex items-center overflow-x-auto gap-2 md:gap-3 py-1 scrollbar-hide">
                                 {categories.map((category) => (
@@ -221,8 +188,6 @@ const CategoryWiseProducts = ({ params }) => {
                             </button>
                         </div>
                     </div>
-
-                    {/* Active filters chips */}
                     {activeFiltersCount > 0 && (
                         <div className="flex flex-wrap items-center gap-2 mb-4 sm:mb-6">
                             <span className="text-xs sm:text-sm text-gray-500">Active filters:</span>
@@ -259,8 +224,6 @@ const CategoryWiseProducts = ({ params }) => {
                             </button>
                         </div>
                     )}
-
-                    {/* Products Grid */}
                     <div className="relative">
                         {isLoading && (
                             <LoadingScreen
@@ -269,7 +232,6 @@ const CategoryWiseProducts = ({ params }) => {
                                 className="absolute inset-0 z-20 bg-white/75! rounded-xl min-h-0!"
                             />
                         )}
-
                         <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6">
                             {filteredProducts.map((product, index) => {
                                 const avgRating = getAvgRating(product._id);
@@ -295,7 +257,6 @@ const CategoryWiseProducts = ({ params }) => {
                                                         />
                                                     );
                                                 })()}
-                                                {/* Stock badge */}
                                                 {product.variants[0].stockCount <= 0 && (
                                                     <div className="absolute top-2 left-2 bg-red-500 text-white text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-1 rounded-full font-medium">
                                                         Out of Stock
@@ -307,16 +268,11 @@ const CategoryWiseProducts = ({ params }) => {
                                                     </div>
                                                 )}
                                             </div>
-
                                             <div className="p-3 sm:p-4 lg:p-5">
                                                 <h3 className="text-sm sm:text-base lg:text-lg font-semibold text-gray-900 mb-1 sm:mb-2 group-hover:text-blue-600 transition-colors line-clamp-2 min-h-[2.5em]">
                                                     {product.name}
                                                 </h3>
-
-                                                {/* Brand */}
                                                 <p className="text-xs sm:text-sm text-gray-500 mb-1.5 sm:mb-2 truncate">{product.brand}</p>
-
-                                                {/* Rating */}
                                                 <div className="flex items-center gap-1 mb-2 sm:mb-3">
                                                     <div className="flex items-center">
                                                         <svg className="w-3 h-3 sm:w-4 sm:h-4 text-yellow-400 fill-current" viewBox="0 0 20 20">
@@ -327,8 +283,6 @@ const CategoryWiseProducts = ({ params }) => {
                                                         {avgRating.toFixed(1)}
                                                     </span>
                                                 </div>
-
-                                                {/* Price */}
                                                 <div className="flex items-center flex-wrap gap-1 sm:gap-2">
                                                     <span className="text-base sm:text-lg lg:text-xl font-bold text-gray-900">
                                                         ${product.variants[0].price}
@@ -346,8 +300,6 @@ const CategoryWiseProducts = ({ params }) => {
                             })}
                         </div>
                     </div>
-
-                    {/* Empty state */}
                     {filteredProducts.length === 0 && !isLoading && (
                         <div className="text-center py-12 sm:py-16">
                             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -370,15 +322,12 @@ const CategoryWiseProducts = ({ params }) => {
                 </div>
             </div>
             <Footer />
-
-            {/* Filter Modal */}
             {showFilterModal && (
                 <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4">
                     <div
                         className="bg-white w-full sm:w-full sm:max-w-md rounded-t-2xl sm:rounded-2xl shadow-2xl max-h-[85vh] sm:max-h-[80vh] overflow-hidden animate-slide-up sm:animate-fade-in"
                         onClick={e => e.stopPropagation()}
                     >
-                        {/* Modal Header */}
                         <div className="flex items-center justify-between p-4 sm:p-5 border-b border-gray-200">
                             <h2 className="text-lg sm:text-xl font-bold text-gray-900">Filters & Sorting</h2>
                             <button
@@ -392,10 +341,7 @@ const CategoryWiseProducts = ({ params }) => {
                                 </svg>
                             </button>
                         </div>
-
-                        {/* Modal Body */}
                         <div className="p-4 sm:p-5 space-y-5 sm:space-y-6 overflow-y-auto max-h-[60vh]">
-                            {/* Sort By */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-900 mb-2 sm:mb-3">Sort By</label>
                                 <div className="grid grid-cols-2 gap-2 sm:gap-3">
@@ -420,8 +366,6 @@ const CategoryWiseProducts = ({ params }) => {
                                     ))}
                                 </div>
                             </div>
-
-                            {/* Price Range */}
                             <div>
                                 <label className="block text-sm font-semibold text-gray-900 mb-2 sm:mb-3">Price Range</label>
                                 <div className="flex items-center gap-2 sm:gap-3">
@@ -452,8 +396,6 @@ const CategoryWiseProducts = ({ params }) => {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* In Stock Only */}
                             <div>
                                 <label className="flex items-center justify-between cursor-pointer group">
                                     <span className="text-sm font-semibold text-gray-900">In Stock Only</span>
@@ -469,8 +411,6 @@ const CategoryWiseProducts = ({ params }) => {
                                 <p className="text-xs text-gray-500 mt-1">Show only products that are currently available</p>
                             </div>
                         </div>
-
-                        {/* Modal Footer */}
                         <div className="p-4 sm:p-5 border-t border-gray-200 bg-gray-50 flex gap-3">
                             <button
                                 onClick={clearFilters}
@@ -488,8 +428,6 @@ const CategoryWiseProducts = ({ params }) => {
                     </div>
                 </div>
             )}
-
-            {/* Animations & Scrollbar styles */}
             <style jsx global>{`
                 @keyframes fadeInUp {
                     from {
@@ -536,5 +474,4 @@ const CategoryWiseProducts = ({ params }) => {
         </>
     );
 };
-
 export default CategoryWiseProducts;

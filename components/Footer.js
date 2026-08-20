@@ -1,15 +1,11 @@
 "use client";
 import Link from 'next/link';
-
 export default function Footer() {
   const currentYear = new Date().getFullYear();
-
   return (
     <footer className="bg-white text-gray-700 border-t border-gray-100">
       <div className="max-w-7xl mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-center">
-
-          {/* Project Info */}
           <div className="text-center md:text-left space-y-2">
             <Link href="/" className="inline-block">
               <h3 className="text-blue-600 text-xl font-bold hover:text-blue-700 transition-colors">ShopLux</h3>
@@ -18,8 +14,6 @@ export default function Footer() {
               A Full Stack E-commerce Project using Next.js 16, Tailwind CSS, cloudinary, Stripe & MongoDB
             </p>
           </div>
-
-          {/* Navigation */}
           <div className="flex justify-center gap-6">
             <Link href="/" className="text-sm font-medium text-gray-600 hover:text-blue-600 transition-colors">
               Home
@@ -34,8 +28,6 @@ export default function Footer() {
               Dashboard
             </Link>
           </div>
-
-          {/* Social / Portfolio Links */}
           <div className="flex flex-col items-center md:items-end gap-2">
             <p className="text-xs font-semibold text-gray-900">Project by Developer</p>
             <div className="flex gap-4">
@@ -52,8 +44,6 @@ export default function Footer() {
             </div>
           </div>
         </div>
-
-        {/* Copyright */}
         <div className="mt-8 pt-6 border-t border-gray-100 text-center">
           <p className="text-xs text-gray-400">
             © {currentYear} ShopLux Project. Not a real e-commerce site. For educational purposes only.

@@ -13,7 +13,6 @@ const AddProductPage = () => {
     const [isUploading, setIsUploading] = useState(false);
     const fileInputRefs = useRef({});
     const { data: session, status } = useSession()
-
     const [productData, setProductData] = useState({
         name: '',
         description: '',
@@ -21,7 +20,6 @@ const AddProductPage = () => {
         productType: '',
         brand: '',
     });
-
     const [variants, setVariants] = useState([{
         attributes: {},
         price: '',
@@ -30,14 +28,11 @@ const AddProductPage = () => {
         images: [],
         sku: '',
     }]);
-
     const [attributeInputs, setAttributeInputs] = useState([{ key: '', value: '' }]);
-
     const categoryOptions = {
         electronics: ['laptops', 'smartphones', 'headphones', 'cameras', 'tablets', 'accessories'],
         fashion: ['men', 'women', 'kids', 'accessories', 'footwear', 'bags']
     };
-
     if (status === 'loading') {
         return (
             <div className="min-h-screen flex items-center justify-center">
@@ -45,18 +40,15 @@ const AddProductPage = () => {
             </div>
         );
     }
-
     if (!session || session?.user?.role !== 'admin') {
         notFound();
     }
-
     const handleProductChange = (field, value) => {
         setProductData(prev => ({ ...prev, [field]: value }));
         if (field === 'category') {
             setProductData(prev => ({ ...prev, productType: '' }));
         }
     };
-
     const handleVariantChange = (index, field, value) => {
         setVariants(prev => {
             const updated = [...prev];
@@ -64,7 +56,6 @@ const AddProductPage = () => {
             return updated;
         });
     };
-
     const handleAttributeChange = (variantIndex, attrIndex, field, value) => {
         if (variantIndex === 0) {
             setAttributeInputs(prev => {
@@ -74,32 +65,25 @@ const AddProductPage = () => {
             });
         }
     };
-
     const addAttributeField = () => {
         setAttributeInputs(prev => [...prev, { key: '', value: '' }]);
     };
-
     const removeAttributeField = (index) => {
         if (attributeInputs.length > 1) {
             setAttributeInputs(prev => prev.filter((_, i) => i !== index));
         }
     };
-
-    // Handle file selection
     const handleFileSelect = async (variantIndex, files) => {
         if (!files || files.length === 0) return;
-
         const newImages = [];
         for (const file of Array.from(files)) {
             if (!file.type.startsWith('image/')) {
                 toast.error('Please select only image files', { position: 'top-center' });
                 continue;
             }
-
             const preview = URL.createObjectURL(file);
             newImages.push({ file, preview, uploaded: null });
         }
-
         setVariants(prev => {
             const updated = [...prev];
             updated[variantIndex] = {
@@ -109,7 +93,6 @@ const AddProductPage = () => {
             return updated;
         });
     };
-
     const removeImage = (variantIndex, imageIndex) => {
         setVariants(prev => {
             const updated = [...prev];
@@ -123,7 +106,6 @@ const AddProductPage = () => {
             return updated;
         });
     };
-
     const addVariant = () => {
         setVariants(prev => [...prev, {
             attributes: {},
@@ -134,7 +116,6 @@ const AddProductPage = () => {
             sku: '',
         }]);
     };
-
     const removeVariant = (index) => {
         if (variants.length > 1) {
             variants[index].images.forEach(img => {
@@ -143,16 +124,13 @@ const AddProductPage = () => {
             setVariants(prev => prev.filter((_, i) => i !== index));
         }
     };
-
     const generateProductId = () => {
         const timestamp = Date.now().toString(36);
         const random = Math.random().toString(36).substr(2, 6);
         return `PRD-${timestamp}-${random}`.toUpperCase();
     };
-
     const uploadImages = async (images, name) => {
         if (images.length === 0) return [];
-
         const formData = new FormData();
         formData.append('productName', name);
         images.forEach(img => {
@@ -164,41 +142,32 @@ const AddProductPage = () => {
             method: 'POST',
             body: formData,
         });
-
         if (!response.ok) {
             throw new Error('Failed to upload images');
         }
-
         const result = await response.json();
         return result.urls;
     };
-
     const handleSubmit = async (e) => {
         e.preventDefault();
         setIsSubmitting(true);
-
         try {
             if (!productData.name || !productData.category || !productData.productType) {
                 toast.error('Please fill all required fields', { position: 'top-center' });
                 setIsSubmitting(false);
                 return;
             }
-
             setIsUploading(true);
             const processedVariants = [];
-
             for (let i = 0; i < variants.length; i++) {
                 const variant = variants[i];
-
                 if (!variant.price || !variant.stockCount || !variant.sku) {
                     throw new Error(`Variant ${i + 1} is missing required fields`);
                 }
-
                 let uploadedImageUrls = [];
                 if (variant.images.length > 0) {
                     uploadedImageUrls = await uploadImages(variant.images, productData.name);
                 }
-
                 const attributes = {};
                 if (i === 0) {
                     attributeInputs.forEach(attr => {
@@ -207,7 +176,6 @@ const AddProductPage = () => {
                         }
                     });
                 }
-
                 processedVariants.push({
                     attributes,
                     price: parseFloat(variant.price),
@@ -217,9 +185,7 @@ const AddProductPage = () => {
                     sku: variant.sku.trim(),
                 });
             }
-
             setIsUploading(false);
-
             const productPayload = {
                 productid: generateProductId(),
                 name: productData.name.trim(),
@@ -229,22 +195,17 @@ const AddProductPage = () => {
                 brand: productData.brand.trim(),
                 variants: processedVariants,
             };
-
             const response = await fetch('/api/products', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(productPayload),
             });
-
             const result = await response.json();
-
             if (!response.ok) {
                 throw new Error(result.error || 'Failed to create product');
             }
-
             toast.success('Product created successfully!', { position: 'top-center' });
             router.push('/');
-
         } catch (error) {
             console.error('Error creating product:', error);
             toast.error(error.message || 'Failed to create product', { position: 'top-center' });
@@ -253,13 +214,10 @@ const AddProductPage = () => {
             setIsSubmitting(false);
         }
     };
-
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col">
             <Navbar />
-
             <main className="grow">
-                {/* Header */}
                 <div className="bg-white border-b border-gray-200">
                     <div className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6">
                         <div className="flex items-center justify-between h-12 sm:h-14 lg:h-16">
@@ -277,14 +235,12 @@ const AddProductPage = () => {
                         </div>
                     </div>
                 </div>
-
                 <form onSubmit={handleSubmit} className="max-w-5xl mx-auto px-3 sm:px-4 lg:px-6 py-4 sm:py-6 lg:py-8">
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5 lg:p-6 mb-4 sm:mb-6">
                         <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 mb-4 sm:mb-5 flex items-center gap-2">
                             <span className="w-6 h-6 sm:w-7 sm:h-7 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs sm:text-sm">1</span>
                             Basic Information
                         </h2>
-
                         <div className="space-y-3 sm:space-y-4">
                             <div>
                                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-1.5">
@@ -299,7 +255,6 @@ const AddProductPage = () => {
                                     required
                                 />
                             </div>
-
                             <div>
                                 <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-1.5">
                                     Description
@@ -312,7 +267,6 @@ const AddProductPage = () => {
                                     className="w-full px-3 py-2 sm:py-2.5 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none text-sm sm:text-base resize-none"
                                 />
                             </div>
-
                             <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
                                 <div>
                                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-1.5">
@@ -329,7 +283,6 @@ const AddProductPage = () => {
                                         <option value="fashion">Fashion</option>
                                     </select>
                                 </div>
-
                                 <div>
                                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-1.5">
                                         Product Type <span className="text-red-500">*</span>
@@ -347,7 +300,6 @@ const AddProductPage = () => {
                                         ))}
                                     </select>
                                 </div>
-
                                 <div>
                                     <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1 sm:mb-1.5">
                                         Brand
@@ -363,7 +315,6 @@ const AddProductPage = () => {
                             </div>
                         </div>
                     </div>
-
                     <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-4 sm:p-5 lg:p-6 mb-4 sm:mb-6">
                         <div className="flex items-center justify-between mb-4 sm:mb-5">
                             <h2 className="text-base sm:text-lg lg:text-xl font-semibold text-gray-900 flex items-center gap-2">
@@ -381,7 +332,6 @@ const AddProductPage = () => {
                                 Add Variant
                             </button>
                         </div>
-
                         {variants.map((variant, variantIndex) => (
                             <div key={variantIndex} className="border border-gray-200 rounded-lg p-3 sm:p-4 mb-4 last:mb-0">
                                 <div className="flex items-center justify-between mb-3">
@@ -396,7 +346,6 @@ const AddProductPage = () => {
                                         </button>
                                     )}
                                 </div>
-
                                 {variantIndex === 0 && (
                                     <div className="mb-4">
                                         <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-2">
@@ -438,7 +387,6 @@ const AddProductPage = () => {
                                         </button>
                                     </div>
                                 )}
-
                                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-3 mb-4">
                                     <div>
                                         <label className="block text-xs font-medium text-gray-700 mb-1">Price *</label>
@@ -486,10 +434,8 @@ const AddProductPage = () => {
                                         />
                                     </div>
                                 </div>
-
                                 <div>
                                     <label className="block text-xs font-medium text-gray-700 mb-2">Product Images</label>
-
                                     {variant.images.length > 0 && (
                                         <div className="flex flex-wrap gap-2 sm:gap-3 mb-3">
                                             {variant.images.map((img, imgIndex) => (
@@ -517,7 +463,6 @@ const AddProductPage = () => {
                                             ))}
                                         </div>
                                     )}
-
                                     <div className="flex items-center gap-2">
                                         <input
                                             ref={el => fileInputRefs.current[variantIndex] = el}
@@ -545,7 +490,6 @@ const AddProductPage = () => {
                             </div>
                         ))}
                     </div>
-
                     <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                         <button
                             type="submit"
@@ -571,10 +515,8 @@ const AddProductPage = () => {
                     </div>
                 </form>
             </main>
-
             <Footer />
         </div>
     );
 };
-
 export default AddProductPage;

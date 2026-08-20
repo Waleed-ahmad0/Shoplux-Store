@@ -4,8 +4,6 @@ import Footer from '@/components/Footer';
 import { useState, use, useCallback, memo } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-
-// Memoized Star Icon component for performance
 const StarIcon = memo(({ filled, size = "w-8 h-8 md:w-10 md:h-10" }) => (
   <svg
     className={`${size} transition-all duration-200`}
@@ -19,13 +17,9 @@ const StarIcon = memo(({ filled, size = "w-8 h-8 md:w-10 md:h-10" }) => (
   </svg>
 ));
 StarIcon.displayName = 'StarIcon';
-
-// Rating labels for accessibility
 const RATING_LABELS = ['', 'Poor', 'Fair', 'Good', 'Very Good', 'Excellent!'];
-
 export default function ProductReviewPage({ params }) {
   const productId = decodeURIComponent(use(params).productId);
-
   const [formData, setFormData] = useState({
     rating: 0,
     title: '',
@@ -37,14 +31,11 @@ export default function ProductReviewPage({ params }) {
   const [errors, setErrors] = useState({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitSuccess, setSubmitSuccess] = useState(false);
-
   const validateForm = useCallback(() => {
     const newErrors = {};
-
     if (formData.rating === 0) {
       newErrors.rating = 'Please select a rating';
     }
-
     if (!formData.title.trim()) {
       newErrors.title = 'Title is required';
     } else if (formData.title.trim().length < 5) {
@@ -52,28 +43,22 @@ export default function ProductReviewPage({ params }) {
     } else if (formData.title.trim().length > 100) {
       newErrors.title = 'Title must not exceed 100 characters';
     }
-
     if (formData.comment.trim() && formData.comment.trim().length < 10) {
       newErrors.comment = 'Comment must be at least 10 characters';
     } else if (formData.comment.trim().length > 1000) {
       newErrors.comment = 'Comment must not exceed 1000 characters';
     }
-
     if (formData.images.length > 5) {
       newErrors.images = 'Maximum 5 images allowed';
     }
-
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   }, [formData]);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     if (!validateForm()) {
       return;
     }
-
     setIsSubmitting(true);
     try {
       const sendingReview = await fetch("/api/review", {
@@ -81,7 +66,6 @@ export default function ProductReviewPage({ params }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData)
       });
-
       if (sendingReview.ok) {
         setSubmitSuccess(true);
         setTimeout(() => {
@@ -95,16 +79,13 @@ export default function ProductReviewPage({ params }) {
       setIsSubmitting(false);
     }
   };
-
   const handleImageUpload = useCallback((e) => {
     const files = Array.from(e.target.files);
     if (formData.images.length + files.length > 5) {
       setErrors(prev => ({ ...prev, images: 'Maximum 5 images allowed' }));
       return;
     }
-
     files.forEach(file => {
-      // Compress and resize images for optimization
       const reader = new FileReader();
       reader.onloadend = () => {
         setFormData(prev => ({
@@ -114,25 +95,20 @@ export default function ProductReviewPage({ params }) {
       };
       reader.readAsDataURL(file);
     });
-
     setErrors(prev => ({ ...prev, images: '' }));
   }, [formData.images.length]);
-
   const removeImage = useCallback((index) => {
     setFormData(prev => ({
       ...prev,
       images: prev.images.filter((_, i) => i !== index)
     }));
   }, []);
-
   const handleRatingClick = useCallback((star) => {
     setFormData(prev => ({ ...prev, rating: star }));
   }, []);
-
   const handleInputChange = useCallback((field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
   }, []);
-
   if (submitSuccess) {
     return (
       <div className="min-h-dvh bg-linear-to-b from-gray-50 to-gray-100 flex items-center justify-center p-4 sm:p-6">
@@ -158,18 +134,15 @@ export default function ProductReviewPage({ params }) {
       </div>
     );
   }
-
   return (
     <div className=" min-h-dvh bg-linear-to-b from-gray-50 to-gray-100 flex flex-col">
       <Navbar />
-
       <main className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8   md:py-10 lg:py-12 grow w-full">
         <form
           onSubmit={handleSubmit}
           className="bg-white rounded-2xl shadow-lg border border-gray-100 p-5 sm:p-6 md:p-8 lg:p-10"
           noValidate
         >
-          {/* Rating Section */}
           <fieldset className="mb-8 sm:mb-10">
             <legend className="block text-sm sm:text-base md:text-lg font-semibold text-gray-800 mb-3 sm:mb-4">
               Rating <span className="text-red-500" aria-label="required">*</span>
@@ -208,8 +181,6 @@ export default function ProductReviewPage({ params }) {
               </p>
             )}
           </fieldset>
-
-          {/* Title */}
           <div className="mb-6 sm:mb-8">
             <label
               htmlFor="title"
@@ -243,8 +214,6 @@ export default function ProductReviewPage({ params }) {
               <p id="title-counter" className="text-xs sm:text-sm text-gray-400 tabular-nums">{formData.title.length}/100</p>
             </div>
           </div>
-
-          {/* Comment */}
           <div className="mb-6 sm:mb-8">
             <label
               htmlFor="comment"
@@ -278,15 +247,11 @@ export default function ProductReviewPage({ params }) {
               <p id="comment-counter" className="text-xs sm:text-sm text-gray-400 tabular-nums">{formData.comment.length}/1000</p>
             </div>
           </div>
-
-          {/* Image Upload */}
           <div className="mb-8 sm:mb-10">
             <label className="block text-sm sm:text-base md:text-lg font-semibold text-gray-800 mb-2 sm:mb-3">
               Add Photos <span className="text-gray-400 font-normal text-xs sm:text-sm">(Optional)</span>
             </label>
             <p className="text-xs sm:text-sm text-gray-500 mb-3 sm:mb-4">Upload up to 5 images to share with other customers</p>
-
-            {/* Image Previews Grid */}
             {formData.images.length > 0 && (
               <div className="grid grid-cols-4 xs:grid-cols-5 gap-2 sm:gap-3 md:gap-4 mb-4">
                 {formData.images.map((img, index) => (
@@ -314,7 +279,6 @@ export default function ProductReviewPage({ params }) {
                 ))}
               </div>
             )}
-
             {formData.images.length < 5 && (
               <label className="cursor-pointer block group">
                 <div className="border-2 border-dashed border-gray-300 rounded-xl p-6 sm:p-8 md:p-10 hover:border-blue-500 hover:bg-blue-50/50 active:border-blue-600 transition-all duration-200 group-focus-within:ring-2 group-focus-within:ring-blue-500 group-focus-within:border-blue-500">
@@ -338,7 +302,6 @@ export default function ProductReviewPage({ params }) {
                 />
               </label>
             )}
-
             {errors.images && (
               <p className="mt-3 text-xs sm:text-sm text-red-600 flex items-center gap-1" role="alert">
                 <svg className="w-4 h-4 shrink-0" fill="currentColor" viewBox="0 0 20 20">
@@ -348,8 +311,6 @@ export default function ProductReviewPage({ params }) {
               </p>
             )}
           </div>
-
-          {/* Submit Button */}
           <button
             type="submit"
             disabled={isSubmitting}
@@ -366,8 +327,6 @@ export default function ProductReviewPage({ params }) {
             ) : 'Submit Review'}
           </button>
         </form>
-
-        {/* Guidelines Card */}
         <aside className="mt-6 sm:mt-8 p-4 sm:p-5 md:p-6 bg-linear-to-r from-blue-50 to-indigo-50 rounded-xl border border-blue-100 shadow-sm">
           <h3 className="text-sm sm:text-base md:text-lg font-semibold text-blue-900 mb-3 flex items-center gap-2">
             <svg className="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">

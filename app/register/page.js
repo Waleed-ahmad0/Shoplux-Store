@@ -1,9 +1,7 @@
 'use client'
-
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
 import React, { useState } from 'react'
-
 export default function Page() {
     const [email, setEmail] = useState('')
     const [password, setPassword] = useState('')
@@ -12,7 +10,6 @@ export default function Page() {
     const [confirmpassword, setconfirmpassword] = useState('')
     const [error, seterror] = useState('')
     const router = useRouter()
-
     const handlesumit = async (e) => {
         e.preventDefault()
         if (email.trim() === "" || password.trim() === "" || confirmpassword.trim() === "") {
@@ -31,13 +28,10 @@ export default function Page() {
                 },
                 body: JSON.stringify({ email, password, firstname, lastname })
             })
-
             const data = await res.json()
-
             if (!res.ok) {
                 seterror(data.error)
                 throw new Error(data.error)
-
             } else {
                 router.push('/login')
             }
@@ -45,7 +39,6 @@ export default function Page() {
             console.error("Error:", error)
         }
     }
-
     return (
         <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-50 via-indigo-50 to-purple-50 px-4 py-12">
             <div className="w-full max-w-md">
@@ -54,7 +47,6 @@ export default function Page() {
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">Create Account</h1>
                         <p className="text-gray-600">Sign up to get started</p>
                     </div>
-
                     <form onSubmit={handlesumit} className="space-y-5">
                         <div>
                             <label htmlFor="first name" className="block text-sm font-medium text-gray-700 mb-2">
@@ -98,7 +90,6 @@ export default function Page() {
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-400"
                             />
                         </div>
-
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                                 Password
@@ -113,7 +104,6 @@ export default function Page() {
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-400"
                             />
                         </div>
-
                         <div>
                             <label htmlFor="confirmpassword" className="block text-sm font-medium text-gray-700 mb-2">
                                 Confirm Password
@@ -128,7 +118,6 @@ export default function Page() {
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-400"
                             />
                         </div>
-
                         <button
                             type="submit"
                             className="w-full bg-linear-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl transform hover:-translate-y-0.5"

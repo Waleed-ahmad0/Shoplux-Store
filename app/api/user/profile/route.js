@@ -1,5 +1,6 @@
 import User from "@/models/user";
 import Order from "@/models/order";
+import Cart from "@/models/cart";
 import Review from "@/models/reviews";
 import { NextResponse } from "next/server";
 import dbConnect from "@/lib/mongodb";
@@ -8,20 +9,14 @@ import { authOptions } from "@/lib/auth";
 export async function GET() {
   try {
     const session = await getServerSession(authOptions);
-
     if (!session?.user?.email) {
       return Response.json({ error: "Unauthorized" }, { status: 401 });
     }
-
     await dbConnect();
-
     const user = await User.findOne({ email: session.user.email });
-
     if (!user) {
       return Response.json({ error: "User not found" }, { status: 404 });
     }
-
-
     return Response.json({
       firstName: user.firstName,
       lastName: user.lastName,
@@ -37,7 +32,6 @@ export async function GET() {
       lastLogin: user.lastLogin,
       createdAt: user.createdAt,
       updatedAt: user.updatedAt,
-
       linkedAccounts: {
         google: !!user.googleId,
         github: !!user.githubId,
@@ -45,39 +39,32 @@ export async function GET() {
         credentials: user.authMethods.includes('credentials')
       }
     });
-
   } catch (error) {
     console.error("Profile fetch error:", error);
     return Response.json({ error: "Internal server error" }, { status: 500 });
   }
 }
-
-export async function DELETE(req) {
-  try {
-    const session = await getServerSession(authOptions);
-    if (!session) {
-      return NextResponse.json({ message: 'unauthorized', status: 401 })
+export async function DELETE() {
+    try {
+        const session = await getServerSession(authOptions);
+        if (!session) {
+            return NextResponse.json({ message: 'unauthorized' }, { status: 401 });
+        }
+        await dbConnect();
+        const userEmail = session.user.email;
+        const user = await User.findOne({ email: userEmail });
+        if (!user) {
+            return NextResponse.json({ error: "User not found" }, { status: 404 });
+        }
+        const userId = user._id;
+        await Promise.all([
+            Order.deleteMany({ userId }),
+            Cart.deleteMany({ userId }),
+            Review.deleteMany({ userId }),
+        ]);
+        await User.deleteOne({ _id: userId });
+        return NextResponse.json({ message: "User and all associated data have been deleted" }, { status: 200 });
+    } catch (error) {
+        return NextResponse.json({ error: error.message }, { status: 500 });
     }
-    await dbConnect();
-    const UserEmail = await req.json();
-
-
-    if (!UserEmail) {
-      return NextResponse.json({ error: "Email is required" }, { status: 400 });
-    }
-
-    const user = await User.findOne({ email: UserEmail });
-    if (!user) {
-      return NextResponse.json({ error: "User not found" }, { status: 404 });
-    }
-
-    await Order.deleteMany({ userId: user._id.toString() });
-
-
-    await User.deleteOne({ email: UserEmail });
-
-    return NextResponse.json({ message: "User and all associated data have been deleted" }, { status: 200 });
-  } catch (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 });
-  }
 }

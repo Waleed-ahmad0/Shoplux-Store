@@ -5,7 +5,6 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 export async function GET() {
     try {
-        
         await dbConnect();
         const reviews = await Review.find({});
         return NextResponse.json(reviews, { status: 200 });

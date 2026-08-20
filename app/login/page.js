@@ -3,14 +3,12 @@ import { signIn, useSession } from 'next-auth/react'
 import { useRouter } from 'next/navigation'
 import React, { useEffect, useState } from 'react'
 import Link from 'next/link'
-
 export default function Page() {
     const [email, setEmail] = useState("")
     const [password, setPassword] = useState("")
     const [error, setError] = useState(null)
     const [isLoading, setIsLoading] = useState(false)
     const [loadingProvider, setLoadingProvider] = useState(null);
-
     const router = useRouter()
     const { data, status } = useSession()
     const handlesubmit = async (e) => {
@@ -31,11 +29,7 @@ export default function Page() {
                 setError("invalid email or password")
             } else {
                 setTimeout(() => {
-
-
                 }, 1000);
-
-                // router.refresh()
             }
         } catch (err) {
             console.error("Login failed:", err)
@@ -48,7 +42,6 @@ export default function Page() {
         try {
             setLoadingProvider(provider);
             setError(null);
-
             await signIn(provider, { callbackUrl: "/" });
         } catch (error) {
             console.error(`${provider} login error:`, error);
@@ -62,7 +55,6 @@ export default function Page() {
             router.push('/');
         }
     }, [status, router]);
-
     return (
         <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-purple-50 via-indigo-50 to-blue-50 px-4 py-12">
             <div className="w-full max-w-md">
@@ -71,7 +63,6 @@ export default function Page() {
                         <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome Back</h1>
                         <p className="text-gray-600">Sign in to your account</p>
                     </div>
-
                     <form onSubmit={handlesubmit} className="space-y-5">
                         <div>
                             <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -87,7 +78,6 @@ export default function Page() {
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-400"
                             />
                         </div>
-
                         <div>
                             <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                                 Password
@@ -102,9 +92,6 @@ export default function Page() {
                                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-gray-900 placeholder-gray-400"
                             />
                         </div>
-
-
-
                         <button
                             type="submit"
                             disabled={isLoading}
@@ -130,7 +117,6 @@ export default function Page() {
                             <span className="mx-4 text-sm text-gray-500 font-medium">Sign in with</span>
                             <div className="grow border-t border-gray-300"></div>
                         </div>
-
                         <div className="space-y-3">
                             {['google', 'discord', 'github'].map((provider) => (
                                 <button

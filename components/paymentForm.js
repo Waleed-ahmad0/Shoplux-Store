@@ -1,5 +1,4 @@
 'use client';
-
 import { useState } from 'react';
 import {
   CardElement,
@@ -12,14 +11,9 @@ export default function PaymentForm({ shippingMethod, items, amount, email, onSu
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
-
   const handleSubmit = async (e) => {
     e.preventDefault();
-
   alert('want to save this address for future use ')
-  // if (alert.ok) {
-    
-  // }
     if (typeof handlePlaceOrder === 'function') {
       try {
         const result = await handlePlaceOrder();
@@ -30,14 +24,11 @@ export default function PaymentForm({ shippingMethod, items, amount, email, onSu
       }
     }
     setError(null);
-
     if (!stripe || !elements) {
       setError('Stripe is not loaded');
       return;
     }
-
     setLoading(true);
-
     try {
       const response = await fetch('/api/create-payment', {
         method: 'POST',
@@ -50,14 +41,10 @@ export default function PaymentForm({ shippingMethod, items, amount, email, onSu
           email,
         }),
       });
-
       const data = await response.json();
-      console.log(data)
-
       if (!response.ok) {
         throw new Error(data.error || 'Failed to create payment intent');
       }
-
       const result = await stripe.confirmCardPayment(data.clientSecret, {
         payment_method: {
           card: elements.getElement(CardElement),
@@ -66,7 +53,6 @@ export default function PaymentForm({ shippingMethod, items, amount, email, onSu
           },
         },
       });
-
       if (result.error) {
         setError(result.error.message);
         if (onError) onError(result.error.message);
@@ -76,14 +62,11 @@ export default function PaymentForm({ shippingMethod, items, amount, email, onSu
       }
     } catch (err) {
       setError(err.message);
-
       if (onError) onError(err.message);
     } finally {
       setLoading(false);
     }
   };
-
-
   return (
     <>
       <form onSubmit={handleSubmit} className="space-y-4">
@@ -103,11 +86,9 @@ export default function PaymentForm({ shippingMethod, items, amount, email, onSu
                 },
               },
               disableLink: true
-
             }}
           />
         </div>
-
         {error && (
           <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
             <p className="text-red-800 text-sm">{error}</p>
@@ -119,10 +100,8 @@ export default function PaymentForm({ shippingMethod, items, amount, email, onSu
             <p className="text-green-700 text-sm mt-1">Thank you for your purchase.</p>
           </div>
         )}
-
         <button
           type="submit"
-
           disabled={!stripe || loading}
           className="w-full bg-gray-900 text-white py-4 rounded-lg font-semibold hover:bg-gray-800 disabled:bg-gray-300 disabled:cursor-not-allowed transition-all duration-200 mb-4"
         >

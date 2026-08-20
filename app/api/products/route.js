@@ -12,23 +12,18 @@ export async function GET() {
         return NextResponse.json({ error: err.message }, { status: 500 });
     }
 }
-
 export async function POST(req) {
     try {
         const session = await getServerSession(authOptions);
-
         if (!session || session?.user?.email !== process.env.ADMIN_EMAIL) {
             return NextResponse.json({ message: 'unauthorized', status: 401 })
         }
-
         const body = await req.json();
         await dbConnect();
         if (!body) {
             return NextResponse.json({ error: "name and price are required" }, { status: 400 });
         }
-
         const result = await Products.create(body);
-
         return NextResponse.json(result, { status: 201 });
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 });
@@ -37,7 +32,6 @@ export async function POST(req) {
 export async function DELETE(req) {
     try {
         const session = await getServerSession(authOptions);
-
         if (!session || session?.user?.email !== process.env.ADMIN_EMAIL) {
             return NextResponse.json({ message: 'unauthorized'},{ status: 401 })
         }
@@ -46,9 +40,7 @@ export async function DELETE(req) {
         if (!productid) {
             return NextResponse.json({ error: "productid is required" }, { status: 400 });
         }
-
         const result = await Products.deleteOne(productid);
-
         return NextResponse.json(result, { status: 201 });
     } catch (err) {
         return NextResponse.json({ error: err.message }, { status: 500 });

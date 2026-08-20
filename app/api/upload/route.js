@@ -2,14 +2,11 @@ import { NextResponse } from "next/server";
 import { v2 as cloudinary } from 'cloudinary';
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-
-
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
     api_key: process.env.CLOUDINARY_API_KEY,
     api_secret: process.env.CLOUDINARY_API_SECRET,
 });
-
 export async function POST(req) {
     try {
                 const session = await getServerSession(authOptions);
@@ -19,19 +16,14 @@ export async function POST(req) {
         const formData = await req.formData();
         const files = formData.getAll("files");
         const productName = formData.get("productName") || "product";
-
         if (!files || files.length === 0) {
             return NextResponse.json({ error: "No files provided" }, { status: 400 });
         }
-
         const uploadedUrls = [];
-
         for (const file of files) {
             if (!file || typeof file === "string") continue;
-
             const bytes = await file.arrayBuffer();
             const buffer = Buffer.from(bytes);
-
             const uploadResult = await new Promise((resolve, reject) => {
                 const uploadStream = cloudinary.uploader.upload_stream(
                     {
@@ -50,19 +42,14 @@ export async function POST(req) {
                 );
                 uploadStream.end(buffer);
             });
-
             uploadedUrls.push(uploadResult.secure_url);
         }
-
         return NextResponse.json({
             success: true,
             urls: uploadedUrls
         });
-
     } catch (error) {
         console.error("Upload route error:", error); 
         return NextResponse.json({ error: error.message || "Unknown server error" }, { status: 500 });
     }
 }
-
-

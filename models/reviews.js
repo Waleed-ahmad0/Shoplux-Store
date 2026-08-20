@@ -1,5 +1,4 @@
 import mongoose, { Schema, model, models } from "mongoose";
-
 const reviewSchema = new Schema(
     {
         userId: {
@@ -62,23 +61,13 @@ const reviewSchema = new Schema(
         timestamps: true
     }
 );
-
-
 reviewSchema.index({ userId: 1, productId: 1 }, { unique: true });
-
 reviewSchema.index({ productId: 1, status: 1, createdAt: -1 });
-
 reviewSchema.index({ productId: 1, rating: -1, createdAt: -1 });
-
 reviewSchema.index({ userId: 1, createdAt: -1 });
-
 reviewSchema.index({ productId: 1, status: 1, verified: 1, createdAt: -1 });
-
 reviewSchema.index({ productId: 1, helpfulCount: -1 });
-
 reviewSchema.index({ status: 1, createdAt: 1 });
-
 reviewSchema.index({ productId: 1, rating: 1 });
-
 const Review = models.Review || model('Review', reviewSchema);
 export default Review;

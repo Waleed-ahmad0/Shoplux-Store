@@ -3,7 +3,6 @@ import React, { useEffect, useState, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { useSession } from "next-auth/react";
-
 const Navbar = () => {
     const { data: session } = useSession();
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -14,30 +13,24 @@ const Navbar = () => {
     const [isSearching, setIsSearching] = useState(false);
     const searchRef = useRef(null);
     const searchTimeoutRef = useRef(null);
-
     const categories = [
         { name: 'Fashion', items: ['Men', 'Women', 'Kids', 'Accessories'] },
         { name: 'Electronics', items: ['Laptops', 'Smartphones', 'Headphones', 'Cameras'] },
     ];
-
-    // Debounced search function
     const handleSearch = useCallback(async (searchTerm) => {
         if (!searchTerm.trim()) {
             setFilteredProducts([]);
             return;
         }
-
         setIsSearching(true);
         try {
             const search = await fetch(`/api/products`);
             const response = await search.json();
             const term = searchTerm.toLowerCase();
-
             const filtered = response.filter(item =>
                 item.name?.toLowerCase().includes(term) ||
                 item.description?.toLowerCase().includes(term)
             );
-
             setFilteredProducts(filtered);
         } catch (error) {
             console.error("Search error:", error);
@@ -46,37 +39,26 @@ const Navbar = () => {
             setIsSearching(false);
         }
     }, []);
-
-    // Handle input change with debounce
     const handleSearchInputChange = (e) => {
         const value = e.target.value;
         setSearchQuery(value);
-
-        // Clear previous timeout
         if (searchTimeoutRef.current) {
             clearTimeout(searchTimeoutRef.current);
         }
-
-        // Set new timeout for debounced search
         searchTimeoutRef.current = setTimeout(() => {
             handleSearch(value);
         }, 300);
     };
-
-    // Clear search
     const clearSearch = () => {
         setSearchQuery('');
         setFilteredProducts([]);
     };
-
-    // Close search results when clicking outside
     useEffect(() => {
         const handleClickOutside = (event) => {
             if (searchRef.current && !searchRef.current.contains(event.target)) {
                 setFilteredProducts([]);
             }
         };
-
         document.addEventListener('mousedown', handleClickOutside);
         return () => {
             document.removeEventListener('mousedown', handleClickOutside);
@@ -85,18 +67,14 @@ const Navbar = () => {
             }
         };
     }, []);
-
-    // Close mobile menu when route changes
     const closeMobileMenu = () => {
         setIsMobileMenuOpen(false);
         setIsDropdownOpen(null);
     };
-
     return (
         <nav className="bg-white shadow-md sticky top-0 z-50">
             <div className="max-w-7xl mx-auto px-4 sm:px-6">
                 <div className="flex items-center gap-3 justify-between h-14 sm:h-16">
-                    {/* Logo */}
                     <div className="flex items-center shrink-0">
                         <Link href={'/'} onClick={closeMobileMenu}>
                             <h1 className="text-xl sm:text-2xl font-bold text-blue-600 cursor-pointer">
@@ -104,8 +82,6 @@ const Navbar = () => {
                             </h1>
                         </Link>
                     </div>
-
-                    {/* Desktop Navigation */}
                     <div className="hidden lg:flex justify-between space-x-6 xl:space-x-8">
                         {categories.map((category) => (
                             <div
@@ -122,8 +98,6 @@ const Navbar = () => {
                                         </svg>
                                     </button>
                                 </Link>
-
-                                {/* Dropdown */}
                                 <div className={`absolute top-full left-0 mt-1 w-48 bg-white rounded-lg shadow-xl border border-gray-100 transition-all duration-300 transform origin-top ${isDropdownOpen === category.name
                                     ? 'opacity-100 visible scale-y-100 translate-y-0'
                                     : 'opacity-0 invisible scale-y-95 -translate-y-2'
@@ -149,8 +123,6 @@ const Navbar = () => {
                             </div>
                         ))}
                     </div>
-
-                    {/* Search Bar - Desktop */}
                     <div ref={searchRef} className="hidden lg:flex flex-1 max-w-md xl:max-w-lg mx-4 xl:mx-8 relative">
                         <div className="relative w-full">
                             <input
@@ -176,8 +148,6 @@ const Navbar = () => {
                                 </button>
                             )}
                         </div>
-
-                        {/* Search Results Dropdown */}
                         {searchQuery && (
                             <div className="absolute top-full left-0 right-0 mt-2 bg-white rounded-xl shadow-2xl border border-gray-200 max-h-[70vh] overflow-hidden z-50">
                                 {isSearching ? (
@@ -254,11 +224,7 @@ const Navbar = () => {
                             </div>
                         )}
                     </div>
-
-                    {/* Right Side Icons */}
                     <div className="flex items-center space-x-1 sm:space-x-3">
-                        {/* User Account */}
-                        {/* User Account Dropdown */}
                         <div className="relative">
                             <button
                                 onClick={() => setIsProfileOpen(!isProfileOpen)}
@@ -271,8 +237,6 @@ const Navbar = () => {
                                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                                 </svg>
                             </button>
-
-                            {/* Dropdown Menu */}
                             <div className={`absolute top-full right-0 mt-2 w-48 bg-white rounded-lg shadow-xl border border-gray-100 transition-all duration-200 transform origin-top-right z-50 ${isProfileOpen
                                 ? 'opacity-100 visible scale-100 translate-y-0'
                                 : 'opacity-0 invisible scale-95 -translate-y-2'
@@ -310,8 +274,6 @@ const Navbar = () => {
                                 </div>
                             </div>
                         </div>
-
-                        {/* Shopping Cart */}
                         <Link href={"/my-cart"}>
                             <button className="relative p-2 text-gray-600 hover:text-blue-600 transition-all duration-200 hover:bg-blue-50 rounded-full" aria-label="Cart" title="Cart">
                                 <svg className="w-5 h-5 sm:w-6 sm:h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -319,8 +281,6 @@ const Navbar = () => {
                                 </svg>
                             </button>
                         </Link>
-
-                        {/* Mobile Menu Button */}
                         <button
                             onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                             className="lg:hidden p-2 text-gray-600 hover:text-blue-600 hover:bg-blue-50 rounded-full transition-all duration-200"
@@ -338,13 +298,9 @@ const Navbar = () => {
                     </div>
                 </div>
             </div>
-
-            {/* Mobile Menu */}
             <div className={`lg:hidden overflow-hidden transition-all duration-300 ease-in-out ${isMobileMenuOpen ? 'max-h-[80vh] opacity-100' : 'max-h-0 opacity-0'}`}>
                 <div className="bg-white border-t border-gray-200">
                     <div className="px-4 py-4">
-
-                        {/* Mobile Search */}
                         <div className="mb-4">
                             <div className="relative">
                                 <input
@@ -370,8 +326,6 @@ const Navbar = () => {
                                     </button>
                                 )}
                             </div>
-
-                            {/* Mobile Search Results */}
                             {searchQuery && filteredProducts.length > 0 && (
                                 <div className="mt-3 bg-gray-50 rounded-xl p-2 max-h-60 overflow-y-auto">
                                     {filteredProducts.slice(0, 5).map((product) => (
@@ -407,8 +361,6 @@ const Navbar = () => {
                                 </div>
                             )}
                         </div>
-
-                        {/* Mobile Categories */}
                         <div className="space-y-1">
                             {categories.map((category) => (
                                 <div key={category.name} className="border-b border-gray-100 last:border-b-0">
@@ -421,7 +373,6 @@ const Navbar = () => {
                                             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
                                         </svg>
                                     </button>
-
                                     <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isDropdownOpen === category.name ? 'max-h-60 opacity-100 pb-2' : 'max-h-0 opacity-0'}`}>
                                         <Link
                                             href={`/products/${category.name}/all`}
@@ -450,5 +401,4 @@ const Navbar = () => {
         </nav >
     );
 };
-
 export default Navbar;

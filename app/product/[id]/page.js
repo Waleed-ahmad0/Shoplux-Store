@@ -1,7 +1,5 @@
-// app/product/[id]/page.js
 "use client";
 import { use, useEffect } from "react";
-// import { ToastContainer, toast } from 'react-toastify';
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
@@ -11,12 +9,10 @@ import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
 import LoadingScreen from "@/components/LoadingScreen";
 import toast from "react-hot-toast";
-
 function getFirstVariant(product) {
   if (!product.variants || product.variants.length === 0) return null;
   return product.variants[0];
 }
-
 function getAvailableAttributes(variants) {
   const attributes = {};
   variants.forEach((variant) => {
@@ -29,58 +25,46 @@ function getAvailableAttributes(variants) {
       });
     }
   });
-
   const result = {};
   Object.keys(attributes).forEach((key) => {
     result[key] = Array.from(attributes[key]);
   });
   return result;
 }
-
 function findVariantByAttributes(variants, selectedAttributes) {
   return variants.find((variant) => {
     if (!variant.attributes) return false;
-
     for (const [key, value] of Object.entries(selectedAttributes)) {
       if (variant.attributes[key] !== value) {
         return false;
       }
     }
-
     if (
       Object.keys(variant.attributes).length !==
       Object.keys(selectedAttributes).length
     ) {
       return false;
     }
-
     return true;
   });
 }
-
 function isCombinationAvailable(variants, attributes) {
   return variants.some((variant) => {
     if (!variant.attributes) return false;
-
     for (const [key, value] of Object.entries(attributes)) {
       if (variant.attributes[key] !== value) {
         return false;
       }
     }
-
     return (
       Object.keys(variant.attributes).length === Object.keys(attributes).length
     );
   });
 }
-
 function getAvailableOptions(variants, attributeType, currentAttributes) {
   const availableOptions = new Set();
-
   variants.forEach((variant) => {
     if (!variant.attributes) return;
-
-    // Check if this variant matches all currently selected attributes except the one we're checking
     let matches = true;
     for (const [key, value] of Object.entries(currentAttributes)) {
       if (key !== attributeType && variant.attributes[key] !== value) {
@@ -88,30 +72,21 @@ function getAvailableOptions(variants, attributeType, currentAttributes) {
         break;
       }
     }
-
     if (matches && variant.attributes[attributeType]) {
       availableOptions.add(variant.attributes[attributeType]);
     }
   });
-
   return Array.from(availableOptions);
 }
-
-// NEW: Find closest available variant when user clicks unavailable option
 function findClosestVariant(variants, attributeType, value) {
-  // First, try to find any variant with this attribute value
   const variantsWithValue = variants.filter(
     (v) => v.attributes && v.attributes[attributeType] === value,
   );
-
   if (variantsWithValue.length > 0) {
     return variantsWithValue[0];
   }
-
-  // Fallback to first variant
   return variants[0];
 }
-
 export default function ProductPage({ params }) {
   const { data, status } = useSession();
   const router = useRouter();
@@ -126,14 +101,11 @@ export default function ProductPage({ params }) {
   const [availableAttributes, setAvailableAttributes] = useState({});
   const [filteredreviews, setfilteredreviews] = useState([]);
   const [avgrating, setavgrating] = useState(0);
-
-  // Get product data
   useEffect(() => {
     const getProduct = async () => {
       try {
         setLoading(true);
         setError(null);
-
         const response = await fetch(`/api/products`);
         if (!response.ok) {
           throw new Error("Failed to fetch products");
@@ -149,19 +121,14 @@ export default function ProductPage({ params }) {
             filteredReviews.length,
         );
         const allProducts = await response.json();
-        console.log(allProducts);
         const productData = allProducts.find((item) => item._id === id);
-
         if (!productData) {
           setError("Product not found");
           return;
         }
-
         setProduct(productData);
-
         const attributes = getAvailableAttributes(productData.variants);
         setAvailableAttributes(attributes);
-
         const firstVariant = getFirstVariant(productData);
         if (firstVariant && firstVariant.attributes) {
           const initialAttributes = {};
@@ -176,10 +143,8 @@ export default function ProductPage({ params }) {
         setLoading(false);
       }
     };
-
     getProduct();
   }, [id]);
-
   function ErrorScreen({ message, onRetry }) {
     return (
       <div className="min-h-screen bg-gray-50 flex items-center justify-center">
@@ -223,31 +188,25 @@ export default function ProductPage({ params }) {
       </div>
     );
   }
-
   const handleAttributeChange = (attributeType, value) => {
     let newAttributes = { ...selectedAttributes, [attributeType]: value };
-
     if (!isCombinationAvailable(product.variants, newAttributes)) {
       const closestVariant = findClosestVariant(
         product.variants,
         attributeType,
         value,
       );
-
       if (closestVariant && closestVariant.attributes) {
         newAttributes = { ...closestVariant.attributes };
       }
     }
-
     setSelectedAttributes(newAttributes);
     setPictureNo(0);
   };
-
   const getSelectedVariant = () => {
     if (!product || !product.variants) return null;
     return findVariantByAttributes(product.variants, selectedAttributes);
   };
-
   const getFilteredOptions = (attributeType) => {
     if (!product || !product.variants) return [];
     return getAvailableOptions(
@@ -256,9 +215,7 @@ export default function ProductPage({ params }) {
       selectedAttributes,
     );
   };
-
   const isCombinationValid = !!getSelectedVariant();
-
   const handleRetry = () => {
     setLoading(true);
     setError(null);
@@ -267,15 +224,12 @@ export default function ProductPage({ params }) {
       window.location.reload();
     }, 1000);
   };
-
   if (loading) {
     return <LoadingScreen message="Loading product..." />;
   }
-
   if (error) {
     return <ErrorScreen message={error} onRetry={handleRetry} />;
   }
-
   if (!product) {
     return (
       <ErrorScreen
@@ -284,7 +238,6 @@ export default function ProductPage({ params }) {
       />
     );
   }
-
   const selectedVariant = getSelectedVariant();
   const images = selectedVariant?.images || [];
   const price = selectedVariant?.price || 0;
@@ -292,11 +245,9 @@ export default function ProductPage({ params }) {
   const stockCount = selectedVariant?.stockCount || 0;
   const displayPrice = salePrice || price;
   const isOnSale = !!salePrice;
-
   const renderStars = (rating, size = "text-lg") => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
-
     return (
       <div className="flex gap-1">
         {[1, 2, 3, 4, 5].map((star) => (
@@ -311,7 +262,6 @@ export default function ProductPage({ params }) {
       </div>
     );
   };
-
   const addingtocart = async () => {
     if (!data?.user?.id) {
       toast.error("Please login to add items to cart", {
@@ -319,9 +269,7 @@ export default function ProductPage({ params }) {
       });
       return;
     }
-
     setIsAddingToCart(true);
-
     try {
       const productdata = {
         productId: product._id,
@@ -335,17 +283,14 @@ export default function ProductPage({ params }) {
         selectedVariant: selectedAttributes,
         salePrice,
       };
-
-      const sendingcartproduct = await fetch(`/api/cart/${data.user.id}`, {
+      const sendingcartproduct = await fetch(`/api/cart`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify(productdata),
       });
-
       const response = await sendingcartproduct.json();
-      console.log(response, sendingcartproduct.status, sendingcartproduct.ok);
       if (response.error === "product already in the cart") {
         toast("Product is already in cart", {
           position: "top-center",
@@ -367,7 +312,6 @@ export default function ProductPage({ params }) {
       setIsAddingToCart(false);
     }
   };
-
   const handleDelete = async () => {
     if (
       !window.confirm(
@@ -376,7 +320,6 @@ export default function ProductPage({ params }) {
     ) {
       return;
     }
-
     try {
       setLoading(true);
       const res = await fetch("/api/products", {
@@ -386,7 +329,6 @@ export default function ProductPage({ params }) {
         },
         body: JSON.stringify({ productid: product._id }),
       });
-
       if (res.ok) {
         toast.success("Product deleted successfully");
         router.push("/");
@@ -402,7 +344,6 @@ export default function ProductPage({ params }) {
       setLoading(false);
     }
   };
-
   return (
     <>
       <Navbar />
@@ -428,7 +369,6 @@ export default function ProductPage({ params }) {
                     </span>
                   </div>
                 )}
-
                 {images.length > 1 && (
                   <>
                     <button
@@ -480,14 +420,12 @@ export default function ProductPage({ params }) {
                     </button>
                   </>
                 )}
-
                 {images.length > 1 && (
                   <div className="absolute bottom-2 sm:bottom-3 left-1/2 transform -translate-x-1/2 bg-black/60 text-white text-xs sm:text-sm px-2 sm:px-3 py-1 rounded-full lg:hidden">
                     {pictureno + 1} / {images.length}
                   </div>
                 )}
               </div>
-
               {images.length > 1 && (
                 <div className="flex lg:grid lg:grid-cols-4 gap-2 sm:gap-3 lg:gap-4 overflow-x-auto lg:overflow-visible pb-1 lg:pb-0 scrollbar-hide">
                   {images.map((img, idx) => (
@@ -515,19 +453,16 @@ export default function ProductPage({ params }) {
                 </div>
               )}
             </div>
-
             <div className="lg:pl-4 xl:pl-8 space-y-4 sm:space-y-6 lg:space-y-8">
               {product.brand && (
                 <div className="text-sm sm:text-base lg:text-lg font-semibold text-blue-600">
                   {product.brand}
                 </div>
               )}
-
               <div className="space-y-2 sm:space-y-3 lg:space-y-4">
                 <h1 className="text-xl sm:text-2xl lg:text-3xl xl:text-4xl font-bold text-gray-900 leading-tight">
                   {product.name}
                 </h1>
-
                 {data?.user?.role === "admin" && (
                   <button
                     onClick={handleDelete}
@@ -590,7 +525,6 @@ export default function ProductPage({ params }) {
                   </div>
                 )}
               </div>
-
               {Object.keys(availableAttributes).length > 0 && (
                 <div className="space-y-4 sm:space-y-5 lg:space-y-6 bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200">
                   <h3 className="text-base sm:text-lg font-semibold text-gray-900">
@@ -600,7 +534,6 @@ export default function ProductPage({ params }) {
                     ([attributeType, allValues]) => {
                       const availableOptions =
                         getFilteredOptions(attributeType);
-
                       return (
                         <div
                           key={attributeType}
@@ -619,7 +552,6 @@ export default function ProductPage({ params }) {
                                 selectedAttributes[attributeType] === value;
                               const isAvailableWithCurrent =
                                 availableOptions.includes(value);
-
                               return (
                                 <button
                                   key={value}
@@ -655,7 +587,6 @@ export default function ProductPage({ params }) {
                   )}
                 </div>
               )}
-
               <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200 space-y-4 sm:space-y-5 lg:space-y-6">
                 <div className="space-y-2 sm:space-y-3">
                   <label className="block text-sm font-semibold text-gray-700">
@@ -716,7 +647,6 @@ export default function ProductPage({ params }) {
                     </div>
                   )}
                 </div>
-
                 <button
                   onClick={addingtocart}
                   disabled={
@@ -756,8 +686,6 @@ export default function ProductPage({ params }) {
                   )}
                 </button>
               </div>
-
-              {/* Description */}
               <div className="bg-white rounded-xl sm:rounded-2xl p-4 sm:p-5 lg:p-6 shadow-sm border border-gray-200">
                 <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2 sm:mb-3 lg:mb-4">
                   Product Description
@@ -770,7 +698,6 @@ export default function ProductPage({ params }) {
           </div>
         </div>
       </div>
-
       <Footer />
       <style jsx global>{`
         .scrollbar-hide {

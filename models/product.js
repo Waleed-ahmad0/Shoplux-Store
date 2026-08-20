@@ -1,7 +1,5 @@
 import { Schema, models, model } from "mongoose"
-
 const productSchema = new Schema({
-
   name: {
     type: String,
     required: true,
@@ -50,23 +48,13 @@ const productSchema = new Schema({
 }, {
   timestamps: true
 });
-
-
 productSchema.index({ category: 1, productType: 1 });
-
 productSchema.index({ category: 1, brand: 1 });
-
 productSchema.index({ category: 1, createdAt: -1 });
-
 productSchema.index({ 'variants.price': 1 });
-
 productSchema.index({ 'variants.stockCount': 1 });
-
 productSchema.index({ 'variants.sku': 1 });
-
 productSchema.index({ name: 'text', description: 'text', brand: 'text' });
-
 productSchema.index({ productType: 1, createdAt: -1 });
-
 const Product = models.Product || model("Product", productSchema);
 export default Product;

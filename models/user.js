@@ -1,5 +1,4 @@
 import mongoose, { Schema, model, models } from "mongoose";
-
 const userschema = new Schema(
     {
         firstName: {
@@ -14,7 +13,7 @@ const userschema = new Schema(
             unique: true,
             lowercase: true,
             trim: true,
-            index: true // Primary lookup by email
+            index: true 
         },
         password: {
             type: String,
@@ -24,19 +23,19 @@ const userschema = new Schema(
             type: String,
             sparse: true,
             unique: true,
-            index: true // OAuth lookup
+            index: true 
         },
         githubId: {
             type: String,
             sparse: true,
             unique: true,
-            index: true // OAuth lookup
+            index: true 
         },
         discordId: {
             type: String,
             sparse: true,
             unique: true,
-            index: true // OAuth lookup
+            index: true 
         },
         authMethods: {
             type: [String],
@@ -50,12 +49,12 @@ const userschema = new Schema(
         isActive: {
             type: Boolean,
             default: true,
-            index: true // Filter active users
+            index: true
         },
         isEmailVerified: {
             type: Boolean,
             default: false,
-            index: true // Filter verified users
+            index: true 
         },
         lastLogin: {
             type: Date,
@@ -66,26 +65,11 @@ const userschema = new Schema(
         timestamps: true,
     }
 );
-
-// ===== INDEXES FOR OPTIMIZATION & SCALABILITY =====
-
-// Compound index: Active and verified users
 userschema.index({ isActive: 1, isEmailVerified: 1 });
-
-// Compound index: User by name (for admin search)
 userschema.index({ firstName: 1, lastName: 1 });
-
-// Text index for user search
 userschema.index({ firstName: 'text', lastName: 'text', email: 'text' });
-
-// Index for sorting by registration date (admin analytics)
 userschema.index({ createdAt: -1 });
-
-// Index for sorting by last login (activity tracking)
 userschema.index({ lastLogin: -1 });
-
-// Compound index: Active users sorted by creation date
 userschema.index({ isActive: 1, createdAt: -1 });
-
 const User = models?.User || model("User", userschema);
 export default User;
