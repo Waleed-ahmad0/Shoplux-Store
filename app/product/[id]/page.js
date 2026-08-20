@@ -101,6 +101,7 @@ export default function ProductPage({ params }) {
   const [availableAttributes, setAvailableAttributes] = useState({});
   const [filteredreviews, setfilteredreviews] = useState([]);
   const [avgrating, setavgrating] = useState(0);
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
   useEffect(() => {
     const getProduct = async () => {
       try {
@@ -313,13 +314,7 @@ export default function ProductPage({ params }) {
     }
   };
   const handleDelete = async () => {
-    if (
-      !window.confirm(
-        "Are you sure you want to delete this product? This action cannot be undone.",
-      )
-    ) {
-      return;
-    }
+    setShowDeleteModal(false);
     try {
       setLoading(true);
       const res = await fetch("/api/products", {
@@ -465,7 +460,7 @@ export default function ProductPage({ params }) {
                 </h1>
                 {data?.user?.role === "admin" && (
                   <button
-                    onClick={handleDelete}
+                    onClick={() => setShowDeleteModal(true)}
                     className="mt-2 text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1 transition-colors"
                   >
                     <svg
@@ -699,6 +694,37 @@ export default function ProductPage({ params }) {
         </div>
       </div>
       <Footer />
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full p-6 sm:p-8 animate-[fadeIn_0.2s_ease-out]">
+            <div className="flex flex-col items-center text-center">
+              <div className="w-14 h-14 bg-red-100 rounded-full flex items-center justify-center mb-4">
+                <svg className="w-7 h-7 text-red-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                </svg>
+              </div>
+              <h3 className="text-lg font-bold text-gray-900 mb-1">Delete Product?</h3>
+              <p className="text-sm text-gray-500 mb-6">
+                Are you sure you want to delete this product? This action cannot be undone.
+              </p>
+              <div className="flex gap-3 w-full">
+                <button
+                  onClick={() => setShowDeleteModal(false)}
+                  className="flex-1 px-4 py-2.5 border-2 border-gray-200 text-gray-700 rounded-xl font-semibold text-sm hover:bg-gray-50 active:bg-gray-100 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleDelete}
+                  className="flex-1 px-4 py-2.5 bg-red-600 text-white rounded-xl font-semibold text-sm hover:bg-red-700 active:bg-red-800 transition-colors"
+                >
+                  Delete
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
       <style jsx global>{`
         .scrollbar-hide {
           -ms-overflow-style: none;
