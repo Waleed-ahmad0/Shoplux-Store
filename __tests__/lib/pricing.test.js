@@ -34,13 +34,13 @@ describe("computeOrderTotal - price integrity", () => {
         productId: product._id.toString(),
         quantity: 2,
         selectedVariant: variantAttrs,
-        price: 0.01, // an attacker-supplied price - must be completely ignored
+        price: 0.01, 
       },
     ];
 
     const { subtotal, verifiedItems } = await computeOrderTotal(items, "standard");
 
-    expect(subtotal).toBe(100); // 2 * the REAL price of 50, not 2 * 0.01
+    expect(subtotal).toBe(100); 
     expect(verifiedItems[0].price).toBe(50);
   });
 
