@@ -68,7 +68,7 @@ const orderSchema = new Schema({
     type: String,
     required: true,
     enum: ['standard', 'express', 'overnight'],
-    default: 'express'
+    default: 'standard'
   },
   status: {
     type: String,

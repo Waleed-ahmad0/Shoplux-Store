@@ -1,5 +1,8 @@
 # ShopLux E-Commerce Platform
 
+![Tests](https://github.com/Waleed-ahmad0/Shoplux-Store/actions/workflows/test.yml/badge.svg)
+
+
 A modern, full-featured e-commerce application built with Next.js 14, Tailwind CSS, and MongoDB. This platform offers a seamless shopping experience for users and comprehensive management tools for shippers.
 
 ## 🚀 Key Features
@@ -20,20 +23,37 @@ A modern, full-featured e-commerce application built with Next.js 14, Tailwind C
   - **Profile Management**: Manage personal details and security settings.
 - **Reviews**: Ability to review purchased products after delivery.
 
-### 🚚 Shipper/Admin Features
+/Admin Features
 
-- **Shipper Dashboard**: Dedicated interface for managing shipping statuses.
-- **Order Fulfillment**: Tools to update order status from 'Pending' to 'Delivered'.
 - **Product Management**: Interface to add new products (`/add-product`) including image uploads.
 
 ## 🛠️ Technology Stack
 
-- **Framework**: [Next.js 15](https://nextjs.org/) (App Router)
+- **Framework**: [Next.js 16](https://nextjs.org/) (App Router)
 - **Styling**: [Tailwind CSS](https://tailwindcss.com/)
 - **Database**: MongoDB
 - **Authentication**: [NextAuth.js](https://next-auth.js.org/)
 - **State Management**: React Hooks & Context
 - **UI Components**: Custom reusable components (Navbar, Footer, Loaders, Models)
+
+## 🛡️ Security
+
+This project went through a deliberate authorization and data-integrity hardening pass. Key findings and fixes included:
+
+- **Price and stock integrity**: Order totals and Stripe payment amounts are computed entirely server-side from the database — never trusted from the client — preventing price tampering at checkout.
+- **Ownership enforcement**: Every order, cart, and profile action verifies the requesting user actually owns the resource being modified, not just that they're logged in.
+- **Payment reliability**: A Stripe webhook independently confirms and records orders server-side, so a dropped connection after payment doesn't result in a charge with no corresponding order.
+- **Data exposure**: API responses were audited to ensure only necessary fields are returned — no password hashes or full raw documents leak through any endpoint.
+
+Covered by an automated test suite (see below) encoding the specific issues found, so they can't silently regress.
+
+## 🧪 Testing
+
+```bash
+npx vitest run
+```
+
+Tests run automatically on every push via GitHub Actions (badge above). Coverage focuses on the two highest-risk areas: price-tampering resistance and order ownership enforcement.
 
 ## 📂 Project Structure
 
@@ -47,7 +67,6 @@ e-commerce/
 │   ├── product/        # Product detailed views
 │   ├── products/       # Category listings
 │   ├── track/          # Order tracking system
-│   ├── shipper/        # Shipper management interface
 │   ├── add-product/    # Admin product creation
 │   └── ...
 ├── components/         # Reusable UI components
@@ -89,6 +108,7 @@ e-commerce/
    CLOUDINARY_CLOUD_NAME=your_cloud_name
    CLOUDINARY_API_KEY=your_cloudinary_api
    CLOUDINARY_API_SECRET=your_cloudinary_secret
+   STRIPE_WEBHOOK_SECRET=your_stripe_webhook_Secret
    ```
 
 4. **Run the development server:**
@@ -103,5 +123,3 @@ e-commerce/
 ## 🤝 Contributing
 
 Contributions are welcome! Please feel free to submit a Pull Request.
-
-

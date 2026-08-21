@@ -102,6 +102,8 @@ export default function ProductPage({ params }) {
   const [filteredreviews, setfilteredreviews] = useState([]);
   const [avgrating, setavgrating] = useState(0);
   const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [restockAmount, setRestockAmount] = useState(0);
+  const [isRestocking, setIsRestocking] = useState(false);
   useEffect(() => {
     const getProduct = async () => {
       try {
@@ -339,6 +341,39 @@ export default function ProductPage({ params }) {
       setLoading(false);
     }
   };
+
+  const handleRestock = async () => {
+    const currentVariant = getSelectedVariant();
+    if (!currentVariant || restockAmount <= 0) return;
+    setIsRestocking(true);
+    try {
+      const res = await fetch("/api/products", {
+        method: "PATCH",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ 
+          productId: product._id, 
+          sku: currentVariant.sku, 
+          additionalStock: restockAmount 
+        }),
+      });
+      if (res.ok) {
+        const updatedProduct = await res.json();
+        setProduct(updatedProduct);
+        setRestockAmount(0);
+        toast.success("Stock updated successfully");
+      } else {
+        const data = await res.json();
+        toast.error(data.error || "Failed to update stock");
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error("An error occurred while updating stock");
+    } finally {
+      setIsRestocking(false);
+    }
+  };
   return (
     <>
       <Navbar />
@@ -459,25 +494,49 @@ export default function ProductPage({ params }) {
                   {product.name}
                 </h1>
                 {data?.user?.role === "admin" && (
-                  <button
-                    onClick={() => setShowDeleteModal(true)}
-                    className="mt-2 text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1 transition-colors"
-                  >
-                    <svg
-                      className="w-4 h-4"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-6 bg-blue-50/50 p-3 sm:p-4 rounded-xl border border-blue-100">
+                    <button
+                      onClick={() => setShowDeleteModal(true)}
+                      className="text-sm text-red-600 hover:text-red-700 font-semibold flex items-center gap-1.5 transition-colors bg-white px-3 py-2 rounded-lg shadow-sm border border-red-100 hover:border-red-200"
                     >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
-                      />
-                    </svg>
-                    Delete Product
-                  </button>
+                      <svg
+                        className="w-4 h-4"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                      Delete Product
+                    </button>
+                    {isCombinationValid && (
+                       <div className="flex items-center gap-2">
+                          <input 
+                            type="number" 
+                            min="1" 
+                            value={restockAmount === 0 ? '' : restockAmount} 
+                            onChange={(e) => setRestockAmount(parseInt(e.target.value) || 0)}
+                            className="w-20 px-2.5 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-shadow"
+                            placeholder="Qty"
+                          />
+                          <button
+                            onClick={handleRestock}
+                            disabled={isRestocking || restockAmount <= 0}
+                            className="text-sm bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 disabled:opacity-50 font-semibold flex items-center gap-1.5 transition-colors shadow-sm"
+                          >
+                            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                            </svg>
+                            {isRestocking ? 'Restocking...' : 'Restock'}
+                          </button>
+                       </div>
+                    )}
+                  </div>
                 )}
                 {filteredreviews.length > 0 ? (
                   <div className="flex items-center gap-1.5 sm:gap-2 flex-wrap">
